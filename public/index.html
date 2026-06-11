@@ -42,15 +42,15 @@
 
 <fieldset>
   <legend>Lines</legend>
+  <p class="muted" style="margin:0 0 10px">Each line is a Product or an Install. Installation labor is taxed by per-category rules that differ by state, so add Install Drapery, Install Blinds, and Install Shutters as their own lines.</p>
   <div id="lines"></div>
   <button type="button" class="sec" onclick="addLine()">+ Add line</button>
 </fieldset>
 
 <fieldset>
-  <legend>Fees (optional)</legend>
+  <legend>Consultation fee (optional)</legend>
   <div class="row">
-    <label>Measure / consultation fee<input id="measure" type="number" step="0.01" placeholder="0"></label>
-    <label>Installation fee<input id="install" type="number" step="0.01" placeholder="0"></label>
+    <label>Measure / design consultation fee<input id="measure" type="number" step="0.01" placeholder="0"></label>
   </div>
 </fieldset>
 
@@ -59,11 +59,13 @@
 
 <script>
 var CATS=['blinds','shutters','draperies'];
-function addLine(name,cat,amt){
+function addLine(name,cat,amt,kind){
   var wrap=document.getElementById('lines');
   var div=document.createElement('div');div.className='lineRow';
   var opts=CATS.map(function(c){return '<option'+(c===cat?' selected':'')+'>'+c+'</option>'}).join('');
+  var kinds=[['product','Product'],['install','Install']].map(function(k){return '<option value="'+k[0]+'"'+(k[0]===(kind||'product')?' selected':'')+'>'+k[1]+'</option>'}).join('');
   div.innerHTML='<label>Name<input class="lname" value="'+(name||'')+'"></label>'+
+    '<label>Type<select class="lkind">'+kinds+'</select></label>'+
     '<label>Category<select class="lcat">'+opts+'</select></label>'+
     '<label>Amount<input class="lamt" type="number" step="0.01" value="'+(amt!=null?amt:'')+'"></label>'+
     '<button type="button" class="x" onclick="this.parentNode.remove()">x</button>';
@@ -76,19 +78,18 @@ function collect(){
   document.querySelectorAll('#lines .lineRow').forEach(function(row){
     var name=row.querySelector('.lname').value.trim();
     var cat=row.querySelector('.lcat').value;
+    var kind=row.querySelector('.lkind').value;
     var amt=parseFloat(row.querySelector('.lamt').value);
-    if(name||!isNaN(amt)) lines.push({name:name,category:cat,amount:isNaN(amt)?0:amt});
+    if(name||!isNaN(amt)) lines.push({name:name,category:cat,kind:kind,amount:isNaN(amt)?0:amt});
   });
   var ro=parseFloat(document.getElementById('rate').value);
   var mf=parseFloat(document.getElementById('measure').value);
-  var inf=parseFloat(document.getElementById('install').value);
   return {
     channel:document.getElementById('channel').value,
     state:document.getElementById('state').value,
     zip:document.getElementById('zip').value,
     rateOverride:isNaN(ro)?0:ro,
     measureFee:isNaN(mf)?0:mf,
-    installFee:isNaN(inf)?0:inf,
     lines:lines
   };
 }
@@ -113,9 +114,11 @@ async function run(){
     show(await res.json());
   }catch(err){out.innerHTML='<p class="warn">'+err+'</p>'}
 }
-// Seed an example quote.
-addLine('Custom Blinds','blinds',1500);
-addLine('Custom Shutters','shutters',2000);
+// Seed an example quote showing product + per-category install lines.
+addLine('Drapery','draperies',1500,'product');
+addLine('Blinds','blinds',1000,'product');
+addLine('Install Drapery','draperies',500,'install');
+addLine('Install Blinds','blinds',500,'install');
 run();
 </script>
 </body>

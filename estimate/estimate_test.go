@@ -111,25 +111,69 @@ func TestEstimate_CanadaBC_DraperyException(t *testing.T) {
 	}
 }
 
-func TestEstimate_InstallFeeSplit(t *testing.T) {
+func lineByName(res Result, name string) (LineResult, bool) {
+	for _, l := range res.Lines {
+		if l.Name == name {
+			return l, true
+		}
+	}
+	return LineResult{}, false
+}
+
+func TestEstimate_PerCategoryInstall_Illinois(t *testing.T) {
+	// Illinois (partner): drapery product AND drapery install are taxable, but
+	// blinds product and blinds install are both exempt. A single lumped install
+	// fee could not express this; separate per-category install lines can.
 	e := newEstimator(t)
-	// Ontario, all 13%: 1000 blinds + 1000 drapes + 600 install -> 2600 * 0.13.
 	got, err := e.Estimate(context.Background(), Request{
-		State:      "Ontario",
-		InstallFee: 600,
+		Channel:      "partners",
+		State:        "Illinois",
+		RateOverride: 0.07,
 		Lines: []Line{
-			{Name: "Blinds", Category: "blinds", Amount: 1000},
-			{Name: "Drapes", Category: "draperies", Amount: 1000},
+			{Name: "Drapery", Category: "draperies", Amount: 1000, Kind: "product"},
+			{Name: "Blinds", Category: "blinds", Amount: 1000, Kind: "product"},
+			{Name: "Install Drapery", Category: "draperies", Amount: 500, Kind: "install"},
+			{Name: "Install Blinds", Category: "blinds", Amount: 500, Kind: "install"},
 		},
 	})
 	if err != nil {
 		t.Fatalf("Estimate() error = %v", err)
 	}
-	if !approxEq(got.Retail, 2600) {
-		t.Errorf("Retail = %v, want 2600 (install split adds to retail)", got.Retail)
+	// Taxable: drapery product 1000 + drapery install 500 = 1500; tax 1500*0.07 = 105.
+	if !approxEq(got.TaxableBase, 1500) {
+		t.Errorf("TaxableBase = %v, want 1500 (drapery product + drapery install)", got.TaxableBase)
 	}
-	if !approxEq(got.TotalTax, 2600*0.13) {
-		t.Errorf("TotalTax = %v, want %v", got.TotalTax, 2600*0.13)
+	if !approxEq(got.TotalTax, 105) {
+		t.Errorf("TotalTax = %v, want 105", got.TotalTax)
+	}
+	checks := []struct {
+		name        string
+		wantTaxable bool
+	}{
+		{"Drapery", true},
+		{"Blinds", false},
+		{"Install Drapery", true},
+		{"Install Blinds", false},
+	}
+	for _, c := range checks {
+		l, ok := lineByName(got, c.name)
+		if !ok {
+			t.Fatalf("line %q missing from result", c.name)
+		}
+		if l.Taxable != c.wantTaxable {
+			t.Errorf("line %q taxable = %v, want %v", c.name, l.Taxable, c.wantTaxable)
+		}
+	}
+}
+
+func TestEstimate_UnknownKind_Errors(t *testing.T) {
+	e := newEstimator(t)
+	_, err := e.Estimate(context.Background(), Request{
+		State: "TX",
+		Lines: []Line{{Name: "X", Category: "blinds", Amount: 1, Kind: "warranty"}},
+	})
+	if err == nil {
+		t.Errorf("Estimate() error = nil, want an error for an unknown kind")
 	}
 }
 

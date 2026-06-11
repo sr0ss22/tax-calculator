@@ -31,20 +31,21 @@ vercel dev      # runs the function + static page locally at http://localhost:30
 
 ```json
 {
-  "channel": "THD",
-  "state": "TX",
-  "zip": "78664",
-  "rateOverride": 0.0825,
+  "channel": "partners",
+  "state": "Illinois",
+  "zip": "60601",
+  "rateOverride": 0.07,
   "measureFee": 120,
-  "installFee": 800,
   "lines": [
-    {"name": "Custom Blinds", "category": "blinds", "amount": 1500},
-    {"name": "Custom Shutters", "category": "shutters", "amount": 2000}
+    {"name": "Drapery", "category": "draperies", "kind": "product", "amount": 1500},
+    {"name": "Blinds", "category": "blinds", "kind": "product", "amount": 1000},
+    {"name": "Install Drapery", "category": "draperies", "kind": "install", "amount": 500},
+    {"name": "Install Blinds", "category": "blinds", "kind": "install", "amount": 500}
   ]
 }
 ```
 
-`state` accepts a US state code or name, or a Canadian province name or code (e.g. `Ontario`, `BC`) to use the static Canada chart. `category` is `blinds`, `shutters`, or `draperies`. `channel` is `THD` or `partners`.
+`state` accepts a US state code or name, or a Canadian province name or code (e.g. `Ontario`, `BC`) to use the static Canada chart. `category` is `blinds`, `shutters`, or `draperies`. `kind` is `product` (default) or `install`; installation labor is taxed by per-category rules that differ by state, so install lines are entered per category. `channel` is `THD` or `partners`.
 
 ## Tests
 

@@ -14,12 +14,16 @@ import (
 	"github.com/sr0ss22/tax-calculator/taxestimate"
 )
 
-// Line is one entered product line: a display name, a taxability category
-// (blinds, shutters, or draperies), and a dollar amount.
+// Line is one entered line: a display name, a taxability category (blinds,
+// shutters, or draperies), a dollar amount, and a kind. Kind is "product"
+// (default) or "install"; installation labor is taxed by per-category rules that
+// differ from product and from each other by state, so install blinds, install
+// shutters, and install draperies are separate lines.
 type Line struct {
 	Name     string  `json:"name"`
 	Category string  `json:"category"`
 	Amount   float64 `json:"amount"`
+	Kind     string  `json:"kind"`
 }
 
 // Request is an entered quote to estimate.
@@ -29,7 +33,6 @@ type Request struct {
 	Zip          string  `json:"zip"`          // US ZIP (for TaxJar); ignored for Canada
 	RateOverride float64 `json:"rateOverride"` // optional US combined rate fraction (0.0825 = 8.25%)
 	MeasureFee   float64 `json:"measureFee"`   // optional measure / design consultation fee
-	InstallFee   float64 `json:"installFee"`   // optional installation labor, split across product categories
 	Lines        []Line  `json:"lines"`
 }
 
@@ -117,14 +120,6 @@ func channelFor(s string) taxestimate.Channel {
 	return taxestimate.ChannelTHD
 }
 
-// installCategoryOrder is the deterministic order for splitting installation
-// labor across the product categories present on the quote.
-var installCategoryOrder = []taxestimate.Category{
-	taxestimate.CategoryBlinds,
-	taxestimate.CategoryShutters,
-	taxestimate.CategoryDraperies,
-}
-
 // builtLine pairs a calculator input with its display name.
 type builtLine struct {
 	input taxestimate.TaxLineInput
@@ -132,14 +127,28 @@ type builtLine struct {
 	warn  string
 }
 
+// lineTypeForKind maps a line kind to its matrix line type. A product line uses
+// the given product line type (Installed Package for US, Product for Canada); an
+// install line uses Additional Labor Services so it picks up that category's
+// installation-labor taxability, which differs by category and state.
+func lineTypeForKind(kind string, productLineType taxestimate.LineType) (taxestimate.LineType, bool) {
+	switch strings.ToLower(strings.TrimSpace(kind)) {
+	case "", "product":
+		return productLineType, true
+	case "install", "installation", "labor":
+		return taxestimate.LineTypeAdditionalLabor, true
+	default:
+		return "", false
+	}
+}
+
 // buildLines turns the request into calculator inputs. productLineType is the line
-// type used for product lines (Installed Package for US, Product for Canada). The
-// measure fee becomes a consultation-fee line; the install fee is split across the
-// product categories proportionally to their subtotals (matching the service flow).
+// type for product lines (Installed Package for US, Product for Canada). Each
+// install line is its own category-specific labor line (install blinds, install
+// shutters, and install draperies are taxed separately). The measure fee becomes a
+// consultation-fee line.
 func buildLines(req Request, productLineType taxestimate.LineType) ([]builtLine, error) {
-	out := make([]builtLine, 0, len(req.Lines)+2)
-	subtotals := map[taxestimate.Category]float64{}
-	var totalProduct float64
+	out := make([]builtLine, 0, len(req.Lines)+1)
 
 	for i, l := range req.Lines {
 		name := strings.TrimSpace(l.Name)
@@ -153,12 +162,14 @@ func buildLines(req Request, productLineType taxestimate.LineType) ([]builtLine,
 		if !ok {
 			return nil, fmt.Errorf("line %d (%s): unknown category %q (use blinds, shutters, or draperies)", i+1, name, l.Category)
 		}
+		lineType, ok := lineTypeForKind(l.Kind, productLineType)
+		if !ok {
+			return nil, fmt.Errorf("line %d (%s): unknown kind %q (use product or install)", i+1, name, l.Kind)
+		}
 		out = append(out, builtLine{
-			input: taxestimate.TaxLineInput{Category: cat, OrderType: taxestimate.OrderTypeJob, LineType: productLineType, Amount: l.Amount},
+			input: taxestimate.TaxLineInput{Category: cat, OrderType: taxestimate.OrderTypeJob, LineType: lineType, Amount: l.Amount},
 			name:  name,
 		})
-		subtotals[cat] += l.Amount
-		totalProduct += l.Amount
 	}
 
 	if req.MeasureFee > 0 {
@@ -166,27 +177,6 @@ func buildLines(req Request, productLineType taxestimate.LineType) ([]builtLine,
 			input: taxestimate.TaxLineInput{Category: taxestimate.CategoryDesignConsultationFee, OrderType: taxestimate.OrderTypeJob, LineType: taxestimate.LineTypeConsultationFee, Amount: req.MeasureFee},
 			name:  "Measure / Design Consultation Fee",
 		})
-	}
-
-	if req.InstallFee > 0 {
-		if totalProduct <= 0 {
-			out = append(out, builtLine{
-				input: taxestimate.TaxLineInput{OrderType: taxestimate.OrderTypeJob, LineType: taxestimate.LineTypeAdditionalLabor, Amount: req.InstallFee},
-				name:  "Installation",
-				warn:  "no product category to attribute installation labor; excluded from taxable base",
-			})
-		} else {
-			for _, cat := range installCategoryOrder {
-				sub := subtotals[cat]
-				if sub <= 0 {
-					continue
-				}
-				out = append(out, builtLine{
-					input: taxestimate.TaxLineInput{Category: cat, OrderType: taxestimate.OrderTypeJob, LineType: taxestimate.LineTypeAdditionalLabor, Amount: req.InstallFee * (sub / totalProduct)},
-					name:  "Installation (" + string(cat) + ")",
-				})
-			}
-		}
 	}
 	return out, nil
 }
