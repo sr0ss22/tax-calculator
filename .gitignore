@@ -1,0 +1,8 @@
+# Go build artifacts
+*.exe
+*.test
+*.out
+# Vercel
+.vercel
+# Editor / OS
+.DS_Store
