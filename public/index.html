@@ -128,6 +128,56 @@
   /* read-only chip used by the nested install row (matches the product, not editable) */
   .roChip{display:inline-flex;align-items:center;gap:7px;padding:8px 11px;border:1px solid #e2e5e9;border-radius:9px;background:#fff;color:#5b6470;font-weight:600;white-space:nowrap}
   .roChip svg{width:16px;height:16px;color:#8a929c}
+  /* sticky mobile action bar (hidden on desktop) */
+  .mobilebar{display:none}
+  /* ===== Mobile (phones / narrow) ===== */
+  @media(max-width:860px){
+    /* Inputs at 16px stop mobile Safari from auto-zooming on focus. */
+    input,select{font-size:16px}
+    /* Comfortable touch targets (~44px min). */
+    input,select,.seg .tog,.btn-sec,.consultLabel,.roChip{min-height:44px}
+    .seg .tog{padding:10px 13px}
+    .btn-x{padding:9px}.btn-x svg{width:18px;height:18px}
+    /* The stacked summary shouldn't pin to the top; the bottom bar drives action. */
+    .right{position:static}
+    .right > .btn-primary{display:none}
+    /* Fixed bottom bar: live applied/blended rate + Estimate, in thumb reach. */
+    .mobilebar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:40;
+      align-items:center;gap:12px;padding:10px 16px;
+      padding-bottom:calc(10px + env(safe-area-inset-bottom));
+      background:rgba(255,255,255,.93);backdrop-filter:blur(10px);
+      border-top:1px solid var(--border);box-shadow:0 -2px 14px rgba(16,24,40,.10)}
+    .mobilebar .mb-info{display:flex;flex-direction:column;line-height:1.12;min-width:0}
+    .mobilebar .mb-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--muted)}
+    .mobilebar .mb-val{font-size:20px;font-weight:800;color:var(--orange-d);font-variant-numeric:tabular-nums}
+    .mobilebar .mb-btn{width:auto;margin:0 0 0 auto;flex:0 0 auto;padding:12px 18px}
+    body{padding-bottom:78px}
+  }
+  @media(max-width:560px){
+    .wrap{padding:0 12px;margin:16px auto}
+    .card{padding:16px 14px 14px}
+    /* Location fields go full width and segmented controls stretch edge-to-edge. */
+    .row{gap:12px}
+    .row > label,.row > .fldcol{width:100%}
+    .row select,.zipin{width:100%}
+    .seg{display:flex;width:100%}
+    .seg .tog{flex:1;justify-content:center}
+    /* Stack each line's fields vertically instead of wrapping. */
+    .lineRow{flex-direction:column;align-items:stretch;padding:14px}
+    .lineRow .fld{width:100%}
+    .lineRow .fld.amt{margin-left:0}
+    .lamt,.lname,.fld.name{width:100%}
+    .productRow .catgrp{width:100%}
+    .productRow .catgrp .tog{flex:1;justify-content:center}
+    /* Trash moves out of the corner into its own right-aligned control. */
+    .lineRow .btn-x{position:static;margin:2px 0 0 auto;color:var(--red)}
+    /* Drop the indent + connector elbow; keep a light accent for grouping. */
+    .installSub{flex-direction:column;align-items:stretch;margin:8px 0 0;padding:12px;border-left:3px solid #e2e5e9}
+    .installSub::before{display:none}
+    .consultLabel,.roChip{width:100%;justify-content:center}
+    /* Full-width Add line for easy tapping. */
+    #lines + .btn-sec{width:100%;justify-content:center}
+  }
 </style>
 </head>
 <body>
@@ -183,6 +233,14 @@
     <button class="btn-primary" onclick="run()"><i data-lucide="calculator"></i>Estimate tax</button>
   </div>
 </div>
+</div>
+
+<div class="mobilebar">
+  <div class="mb-info">
+    <span class="mb-label" id="mbLabel">Applied rate</span>
+    <span class="mb-val" id="mbRate">&mdash;</span>
+  </div>
+  <button type="button" class="btn-primary mb-btn" onclick="run()"><i data-lucide="calculator"></i>Estimate</button>
 </div>
 
 <div class="modal-overlay" id="typeModal" onclick="if(event.target===this)closeTypeModal()">
@@ -350,6 +408,11 @@ function chooseType(kind){
   closeTypeModal();
   if(kind==='consult') addConsultLine(null); else addProductLine('blinds',null,null);
 }
+// Mirror the headline rate into the sticky mobile bar (no-op on desktop).
+function setMobileRate(val,label){
+  var v=document.getElementById('mbRate'),l=document.getElementById('mbLabel');
+  if(v)v.textContent=val; if(l&&label)l.textContent=label;
+}
 function fmt(v){return (v||0).toLocaleString('en-US',{style:'currency',currency:'USD'})}
 function pct(r){return ((r||0)*100).toFixed(3)+'%'}
 function collect(){
@@ -386,9 +449,12 @@ function pillFor(l){
 function show(d){
   var lineOut=document.getElementById('lineOut');
   if(d.error){
+    setMobileRate('—','Applied rate');
     lineOut.innerHTML='<div class="notes"><i data-lucide="alert-triangle"></i><span>'+d.error+'</span></div>';icons();return;
   }
   document.getElementById('sumLoc').textContent=(d.country||'')+' · '+(d.state||'-')+(d.zip?(' '+d.zip):'');
+  // Headline figure for the bottom bar: blended rate when present, else applied rate.
+  setMobileRate(d.blended?((d.blendedRate*100).toFixed(2)+'%'):pct(d.combinedRate),d.blended?'Blended rate':'Applied rate');
   // Applied tax rate as a hero — the jurisdiction rate the user keys into the order system.
   var rateHero='<div class="blendhero ratehero"><div class="bh-label"><i data-lucide="percent"></i>Applied tax rate</div>'+
     '<div class="bh-rate">'+pct(d.combinedRate)+'</div>'+
@@ -424,6 +490,7 @@ function scheduleRun(){clearTimeout(_runTimer);_runTimer=setTimeout(run,300);}
 async function run(){
   clearTimeout(_runTimer);
   if(!document.getElementById('state').value){
+    setMobileRate('—','Applied rate');
     document.getElementById('lineOut').innerHTML='<p class="placeholder">Pick a state or province to estimate.</p>';
     return;
   }
