@@ -40,6 +40,7 @@ type Request struct {
 type LineResult struct {
 	Name        string  `json:"name"`
 	Category    string  `json:"category"`
+	Kind        string  `json:"kind"` // "product", "install", or "consult"
 	LineType    string  `json:"lineType"`
 	Amount      float64 `json:"amount"`
 	Found       bool    `json:"found"`
@@ -125,6 +126,7 @@ type builtLine struct {
 	input taxestimate.TaxLineInput
 	name  string
 	warn  string
+	kind  string // "product", "install", or "consult" (for display grouping)
 }
 
 // buildLines turns the request into calculator inputs. productLineType is the line
@@ -149,10 +151,12 @@ func buildLines(req Request, productLineType taxestimate.LineType) ([]builtLine,
 		}
 
 		var input taxestimate.TaxLineInput
+		kind := "product"
 		switch strings.ToLower(strings.TrimSpace(l.Kind)) {
 		case "consult", "consultation", "fee":
 			// Consultation fee has its own category and line type; the category field
 			// is not used.
+			kind = "consult"
 			input = taxestimate.TaxLineInput{Category: taxestimate.CategoryDesignConsultationFee, OrderType: taxestimate.OrderTypeJob, LineType: taxestimate.LineTypeConsultationFee, Amount: l.Amount}
 		case "", "product", "install", "installation", "labor":
 			cat, ok := categoryFromString(l.Category)
@@ -162,18 +166,20 @@ func buildLines(req Request, productLineType taxestimate.LineType) ([]builtLine,
 			lineType := productLineType
 			if k := strings.ToLower(strings.TrimSpace(l.Kind)); k == "install" || k == "installation" || k == "labor" {
 				lineType = taxestimate.LineTypeAdditionalLabor
+				kind = "install"
 			}
 			input = taxestimate.TaxLineInput{Category: cat, OrderType: taxestimate.OrderTypeJob, LineType: lineType, Amount: l.Amount}
 		default:
 			return nil, fmt.Errorf("line %d (%s): unknown kind %q (use product, install, or consult)", i+1, name, l.Kind)
 		}
-		out = append(out, builtLine{input: input, name: name})
+		out = append(out, builtLine{input: input, name: name, kind: kind})
 	}
 
 	if req.MeasureFee > 0 {
 		out = append(out, builtLine{
 			input: taxestimate.TaxLineInput{Category: taxestimate.CategoryDesignConsultationFee, OrderType: taxestimate.OrderTypeJob, LineType: taxestimate.LineTypeConsultationFee, Amount: req.MeasureFee},
 			name:  "Measure / Design Consultation Fee",
+			kind:  "consult",
 		})
 	}
 	return out, nil
@@ -284,6 +290,7 @@ func fillOrder(res *Result, built []builtLine, order taxestimate.OrderTaxResult)
 		lr := LineResult{
 			Name:        built[i].name,
 			Category:    string(l.Input.Category),
+			Kind:        built[i].kind,
 			LineType:    string(l.Input.LineType),
 			Amount:      l.Input.Amount,
 			Found:       l.Found,

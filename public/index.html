@@ -21,7 +21,7 @@
   .topbar .divider{width:1px;height:20px;background:#3a3c42}
   .topbar h1{font-size:15px;font-weight:600;margin:0;color:#e9eaec}
   .tag{margin-left:auto;font-size:12px;color:#b9bcc2;border:1px solid #34363c;border-radius:999px;padding:3px 10px}
-  .wrap{max-width:1080px;margin:22px auto;padding:0 18px}
+  .wrap{max-width:1200px;margin:22px auto;padding:0 18px}
   .lead{color:var(--muted);margin:0 0 18px;font-size:13.5px}
   .layout{display:grid;grid-template-columns:1fr 360px;gap:18px;align-items:start}
   @media(max-width:860px){.layout{grid-template-columns:1fr}}
@@ -52,13 +52,14 @@
   .btn-sec{background:#fff;border:1px solid #d4d7dc;color:#2a2e35;border-radius:9px;padding:8px 13px;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:7px}
   .btn-sec:hover{background:#f7f8fa}
   .btn-sec svg{width:15px;height:15px}
-  .lineRow{display:flex;gap:12px;align-items:flex-end;padding:10px;border:1px solid #eef0f2;border-radius:10px;margin-bottom:8px;background:#fcfcfd;flex-wrap:wrap}
+  .lineRow{position:relative;display:flex;gap:14px;align-items:flex-end;padding:12px 40px 12px 12px;border:1px solid #eef0f2;border-radius:10px;margin-bottom:8px;background:#fcfcfd;flex-wrap:wrap}
   .fld{display:flex;flex-direction:column;gap:5px}
   .fld.name{flex:1 1 130px;min-width:120px}
+  .fld.amt{margin-left:auto}
   .cap{font-size:11px;font-weight:600;color:#6b7280}
   .lname{width:100%}
-  .lamt{width:108px}
-  .btn-x{background:transparent;border:0;color:#b0b4bb;padding:8px;border-radius:8px}
+  .lamt{width:120px}
+  .btn-x{position:absolute;top:8px;right:8px;background:transparent;border:0;color:#b0b4bb;padding:6px;border-radius:8px;line-height:0}
   .btn-x:hover{background:var(--red-bg);color:var(--red)}
   .btn-x svg{width:16px;height:16px}
   /* summary */
@@ -81,6 +82,8 @@
   .totals .tr{display:flex;justify-content:space-between}
   .totals .grand{font-size:17px;font-weight:700;margin-top:5px}
   .totals .grand b{color:var(--orange-d)}
+  .totals .tr.sub{color:var(--muted);font-size:12.5px}
+  .totals .tr.tot{margin-top:5px;padding-top:6px;border-top:1px solid #eef0f2;font-weight:600}
   .blend,.notes{margin-top:14px;border-radius:10px;padding:11px 13px;font-size:12.5px;display:flex;gap:9px;align-items:flex-start}
   .blend{background:var(--amber-bg);border:1px solid var(--amber-bd);color:#7a5200}
   .notes{background:#f3f6fb;border:1px solid #dde6f2;color:#3a4a63}
@@ -209,7 +212,7 @@ function lineName(kind,cat){
 function addLine(cat,amt,kind){
   kind=kind||'product';
   var div=document.createElement('div');div.className='lineRow';
-  var amtFld='<div class="fld"><span class="cap">Amount</span><input class="lamt" type="number" step="0.01" placeholder="0.00" value="'+(amt!=null?amt:'')+'"></div>';
+  var amtFld='<div class="fld amt"><span class="cap">Amount</span><input class="lamt" type="number" step="0.01" placeholder="0.00" value="'+(amt!=null?amt:'')+'"></div>';
   var rmBtn='<button type="button" class="btn-x" title="Remove line" onclick="this.closest(\'.lineRow\').remove()"><i data-lucide="trash-2"></i></button>';
   if(kind==='consult'){
     div.dataset.kind='consult';
@@ -274,6 +277,13 @@ function show(d){
     return '<div class="srow"><div><div class="snm">'+(l.name||'-')+'</div><div class="ssub">'+(l.category||'-')+' &middot; '+fmt(l.amount)+(l.taxable?(' @ '+pct(l.appliedRate)):'')+'</div></div>'+
       '<div class="sright">'+pillFor(l)+'<div class="stax">'+fmt(l.tax)+'</div></div></div>';
   }).join('');
+  // Tax broken out by line kind (product / install / consult).
+  var byKind={product:0,install:0,consult:0},seen={product:false,install:false,consult:false};
+  (d.lines||[]).forEach(function(l){if(l.kind in byKind){byKind[l.kind]+=(l.tax||0);seen[l.kind]=true;}});
+  var breakout='';
+  if(seen.product) breakout+='<div class="tr sub"><span>Product tax</span><span>'+fmt(byKind.product)+'</span></div>';
+  if(seen.install) breakout+='<div class="tr sub"><span>Installation tax</span><span>'+fmt(byKind.install)+'</span></div>';
+  if(seen.consult) breakout+='<div class="tr sub"><span>Consultation tax</span><span>'+fmt(byKind.consult)+'</span></div>';
   var rateTag=d.rateOverridden?' (override)':(d.rateEstimated?' (estimate)':'');
   var blend=d.blended?'<div class="blend"><i data-lucide="scale"></i><span>THD blended-tax case: enter <b>'+(d.blendedRate*100).toFixed(2)+'%</b> on the TAX and TAX-Install lines (total tax / total retail).</span></div>':'';
   var notes=(d.warnings&&d.warnings.length)?'<div class="notes"><i data-lucide="info"></i><div><b>Notes</b><ul>'+d.warnings.map(function(w){return '<li>'+w+'</li>'}).join('')+'</ul></div></div>':'';
@@ -282,7 +292,8 @@ function show(d){
     '<div class="ratebadge">Applied rate '+pct(d.combinedRate)+rateTag+'</div>'+
     lines+
     '<div class="totals"><div class="tr"><span>Taxable base</span><span>'+fmt(d.taxableBase)+'</span></div>'+
-    '<div class="tr"><span>Total tax</span><span>'+fmt(d.totalTax)+'</span></div>'+
+    breakout+
+    '<div class="tr tot"><span>Total tax</span><span>'+fmt(d.totalTax)+'</span></div>'+
     '<div class="tr grand"><span>Order total</span><b>'+fmt(d.orderTotal)+'</b></div></div>'+
     blend+notes+'</div>';
   icons();
