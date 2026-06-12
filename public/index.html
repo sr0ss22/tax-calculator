@@ -438,16 +438,22 @@ function show(d){
     lineOut.innerHTML='<div class="notes"><i data-lucide="alert-triangle"></i><span>'+d.error+'</span></div>';icons();return;
   }
   document.getElementById('sumLoc').textContent=(d.country||'')+' · '+(d.state||'-')+(d.zip?(' '+d.zip):'');
-  // Headline figure for the bottom bar: blended rate when present, else applied rate.
-  setMobileRate(d.blended?((d.blendedRate*100).toFixed(2)+'%'):pct(d.combinedRate),d.blended?'Blended rate':'Applied rate');
-  // Headline rate to key into the order system. When the order blends taxable and
-  // exempt products, the blended rate IS the rate to enter, so it replaces the
-  // applied rate (showing both is confusing).
+  // A mixed order (some retail taxed, some exempt) has a single effective/blended
+  // rate = total tax ÷ total retail — the rate to key in when one rate covers the
+  // whole order. Use the engine's blended figure when set, else derive it.
+  var retail=(d.retail!=null)?d.retail:(d.lines||[]).reduce(function(s,l){return s+(l.amount||0)},0);
+  var mixed=retail>0 && d.totalTax>0 && d.taxableBase < retail-1e-9;
+  var isBlended=d.blended||mixed;
+  var blendedRate=d.blended?d.blendedRate:(retail>0?d.totalTax/retail:0);
+  // Headline figure for the bottom bar.
+  setMobileRate(isBlended?((blendedRate*100).toFixed(2)+'%'):pct(d.combinedRate),isBlended?'Blended rate':'Applied rate');
+  // Headline rate to key into the order system. When blended, that rate replaces
+  // the applied rate (showing both is confusing).
   var headHero;
-  if(d.blended){
+  if(isBlended){
     headHero='<div class="blendhero"><div class="bh-label"><i data-lucide="scale"></i>Blended tax rate</div>'+
-      '<div class="bh-rate">'+(d.blendedRate*100).toFixed(2)+'%</div>'+
-      '<div class="bh-sub">Enter this rate on the TAX and TAX-Install lines (total tax &divide; total retail)</div></div>';
+      '<div class="bh-rate">'+(blendedRate*100).toFixed(2)+'%</div>'+
+      '<div class="bh-sub">Enter this rate for the order (total tax &divide; total retail). Applied rate is '+pct(d.combinedRate)+'.</div></div>';
   }else{
     headHero='<div class="blendhero ratehero"><div class="bh-label"><i data-lucide="percent"></i>Applied tax rate</div>'+
       '<div class="bh-rate">'+pct(d.combinedRate)+'</div>'+
