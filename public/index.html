@@ -20,11 +20,12 @@
   .brand{font-weight:700;letter-spacing:.3px}
   .topbar .divider{width:1px;height:20px;background:#3a3c42}
   .topbar h1{font-size:15px;font-weight:600;margin:0;color:#e9eaec}
+  .topbar .subtitle{color:#9da1a8;font-size:12.5px;border-left:1px solid #3a3c42;padding-left:14px}
   .tag{margin-left:auto;font-size:12px;color:#b9bcc2;border:1px solid #34363c;border-radius:999px;padding:3px 10px}
   .wrap{max-width:1200px;margin:22px auto;padding:0 18px}
   .lead{color:var(--muted);margin:0 0 18px;font-size:13.5px}
   .layout{display:grid;grid-template-columns:1fr 360px;gap:18px;align-items:start}
-  @media(max-width:860px){.layout{grid-template-columns:1fr}}
+  @media(max-width:860px){.layout{grid-template-columns:1fr}.topbar .subtitle{display:none}}
   .right{position:sticky;top:18px}
   .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px 18px 16px;margin-bottom:16px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
   .card h2{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;margin:0 0 14px}
@@ -37,6 +38,7 @@
   .zipin{width:84px}
   input,select{font:inherit;padding:9px 11px;border:1px solid #d4d7dc;border-radius:9px;background:#fff;color:var(--ink)}
   input:focus,select:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 3px rgba(251,94,30,.15)}
+  input:disabled{background:#f1f2f4;color:#9aa0a8;cursor:not-allowed}
   /* segmented / toggle buttons */
   .seg{display:inline-flex;border:1px solid #d4d7dc;border-radius:9px;background:#fff}
   .seg .tog{position:relative;background:#fff;border:0;border-right:1px solid #e6e8eb;padding:8px 11px;color:#6b7280;display:inline-flex;align-items:center;gap:6px;font:inherit;font-weight:600;cursor:pointer}
@@ -195,18 +197,18 @@
   <span class="logo"></span><span class="brand">brite</span>
   <span class="divider"></span>
   <h1>Quote Tax Estimate</h1>
+  <span class="subtitle">Estimate sales tax for a quote. Pick a location and channel, then add lines.</span>
   <span class="tag">Estimate only</span>
 </header>
 
 <div class="wrap">
-<p class="lead">Estimate sales tax for a quote. Pick a location and channel, then add lines. SAP remains the system of record for actual tax.</p>
 
 <div class="layout">
   <div class="left">
     <div class="card">
       <h2><i data-lucide="map-pin"></i>Location and channel</h2>
       <div class="row">
-        <label>State or province<select id="state" onchange="run()"></select></label>
+        <label>State or province<select id="state" onchange="onStateChange()"></select></label>
         <label>ZIP (US)<input id="zip" class="zipin" maxlength="10" placeholder="ZIP"></label>
         <div class="fldcol"><span class="fldlbl">Channel</span>
           <div class="seg" id="channel">
@@ -298,6 +300,19 @@ function selectByValue(sel,name){
 // Detect the state on load (no permission prompt). Fills State only; ZIP is manual.
 // Primary: Vercel edge geo via our /api/geo (same-origin, reliable). Fallback:
 // ipwho.is (covers local dev where edge headers are absent).
+// ZIP applies to US only; Canadian provinces use static province rates, so the
+// field is disabled there. Changing the state always clears the ZIP.
+function syncZipForState(){
+  var zip=document.getElementById('zip');
+  var ca=CA_PROVINCES.indexOf(document.getElementById('state').value)>=0;
+  zip.disabled=ca;
+  zip.placeholder=ca?'N/A in Canada':'ZIP';
+}
+function onStateChange(){
+  document.getElementById('zip').value='';
+  syncZipForState();
+  run();
+}
 async function detectLocation(){
   var sel=document.getElementById('state');var located=false;
   try{
@@ -310,6 +325,7 @@ async function detectLocation(){
       if(r2.ok){var g2=await r2.json();if(g2.success&&g2.region&&selectByValue(sel,g2.region)) located=true;}
     }catch(e){}
   }
+  syncZipForState();
   if(located) run();
   else document.getElementById('lineOut').innerHTML='<p class="placeholder">Pick a state or province to estimate.</p>';
 }
@@ -470,13 +486,13 @@ function show(d){
   if(seen.product) breakout+='<div class="tr sub"><span>Product tax</span><span>'+fmt(byKind.product)+'</span></div>';
   if(seen.install) breakout+='<div class="tr sub"><span>Installation tax</span><span>'+fmt(byKind.install)+'</span></div>';
   if(seen.consult) breakout+='<div class="tr sub"><span>Consultation tax</span><span>'+fmt(byKind.consult)+'</span></div>';
-  var notes=(d.warnings&&d.warnings.length)?'<div class="notes"><i data-lucide="info"></i><div><b>Notes</b><ul>'+d.warnings.map(function(w){return '<li>'+w+'</li>'}).join('')+'</ul></div></div>':'';
+  // Notes/warnings box removed: rate is ZIP-accurate and per-line pills already
+  // show Taxable/Exempt/N-A, so the disclaimers were noise.
   lineOut.innerHTML=headHero+lines+
     '<div class="totals"><div class="tr"><span>Taxable base</span><span>'+fmt(d.taxableBase)+'</span></div>'+
     breakout+
     '<div class="tr tot"><span>Total tax</span><span>'+fmt(d.totalTax)+'</span></div>'+
-    '<div class="tr grand"><span>Order total</span><b>'+fmt(d.orderTotal)+'</b></div></div>'+
-    notes;
+    '<div class="tr grand"><span>Order total</span><b>'+fmt(d.orderTotal)+'</b></div></div>';
   icons();
 }
 // Debounced auto-recalc: every input/toggle change schedules a run; typing
