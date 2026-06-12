@@ -507,7 +507,12 @@ function show(d){
   if(seen.consult) breakout+='<div class="tr sub"><span>'+iconHTML('swatch-book')+'Consultation tax</span><span>'+fmt(byKind.consult)+'</span></div>';
   // Targeted caution: only when the ZIP-table rate includes a city-level tax,
   // which can be wrong if the address sits just outside the city limit (e.g. 55430).
-  var note=d.rateBoundaryRisk?'<div class="ratenote"><i data-lucide="info"></i><span>This ZIP includes a city-level tax. If the address is outside the city limits the actual rate may be lower &mdash; verify the local rate and use Rate override if needed.</span></div>':'';
+  var note='';
+  if(d.rateBoundaryRisk){
+    var cityPct=((d.rateCityRate||0)*100).toFixed(3)+'%';
+    var without=(((d.combinedRate||0)-(d.rateCityRate||0))*100).toFixed(3)+'%';
+    note='<div class="ratenote"><i data-lucide="info"></i><span>This ZIP includes a <b>'+cityPct+'</b> city tax. If the address is outside the city limits, deduct it for <b>'+without+'</b> &mdash; verify the local rate and use Rate override if needed.</span></div>';
+  }
   lineOut.innerHTML=headHero+note+lines+
     '<div class="totals"><div class="tr"><span>Taxable base</span><span>'+fmt(d.taxableBase)+'</span></div>'+
     breakout+

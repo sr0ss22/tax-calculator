@@ -61,6 +61,9 @@ type Result struct {
 	// RateBoundaryRisk is true when the ZIP-table rate includes a city-level tax,
 	// so a ZIP that straddles the city limit may be over/under-stated — verify.
 	RateBoundaryRisk bool `json:"rateBoundaryRisk"`
+	// RateCityRate is the city-tax component of a ZIP-table rate (fraction), so the
+	// UI can tell the user how much to deduct if the address is outside city limits.
+	RateCityRate float64 `json:"rateCityRate,omitempty"`
 	TaxableBase    float64      `json:"taxableBase"`
 	Retail         float64      `json:"retail"`
 	TotalTax       float64      `json:"totalTax"`
@@ -241,6 +244,7 @@ func (e *Estimator) estimateUS(ctx context.Context, req Request) (Result, error)
 				}
 				rate = taxestimate.RateResult{Zip: req.Zip, CombinedRate: zr.combined, Jurisdictions: region}
 				res.RateBoundaryRisk = zr.cityRate > 0
+				res.RateCityRate = zr.cityRate
 			}
 		}
 		if rate.CombinedRate == 0 {
