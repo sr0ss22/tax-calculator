@@ -66,7 +66,15 @@
   .resulthead{display:flex;align-items:center;gap:8px;margin-bottom:8px}
   .resulthead svg{width:17px;height:17px;color:var(--orange)}
   .resulthead .loc{font-weight:700;font-size:15px}
+  .rateOv{margin-left:auto;display:flex;flex-direction:row;align-items:center;gap:6px;font-size:11px;font-weight:600;color:#6b7280}
+  .rateOv input{width:88px;padding:6px 8px;font-size:12.5px}
   .ratebadge{font-size:12.5px;color:#3a3f48;background:#f1f2f4;border-radius:999px;padding:4px 12px;font-weight:600;display:inline-block;margin-bottom:10px}
+  /* blended-rate hero — the figure the user keys into the order */
+  .blendhero{margin-top:14px;border-radius:12px;padding:15px 16px;background:linear-gradient(135deg,#fff3ec,#ffe6d6);border:1px solid #f3c9a8}
+  .blendhero .bh-label{font-size:11px;font-weight:700;color:#a85416;text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:6px}
+  .blendhero .bh-label svg{width:14px;height:14px}
+  .blendhero .bh-rate{font-size:30px;font-weight:800;color:var(--orange-d);line-height:1.15;margin:2px 0}
+  .blendhero .bh-sub{font-size:12px;color:#7a5200}
   .srow{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid #eef0f2}
   .srow:first-of-type{border-top:0}
   .snm{font-weight:600}
@@ -132,7 +140,6 @@
       <div class="row">
         <label>State or province<select id="state"></select></label>
         <label>ZIP (US, optional)<input id="zip" value="78664" placeholder="78664"></label>
-        <label>Rate override<input id="rate" type="number" step="0.0001" placeholder="e.g. 0.0825" style="width:130px"></label>
       </div>
       <div style="margin-top:14px;display:flex;gap:26px;flex-wrap:wrap">
         <div>
@@ -161,7 +168,15 @@
   </div>
 
   <div class="right">
-    <div id="out"></div>
+    <div class="card">
+      <div class="resulthead">
+        <i data-lucide="receipt-text"></i>
+        <span class="loc" id="sumLoc">Estimate</span>
+        <label class="rateOv">Rate override<input id="rate" type="number" step="0.0001" placeholder="auto" onchange="run()"></label>
+      </div>
+      <div class="ratebadge" id="sumRate" style="display:none"></div>
+      <div id="lineOut"><p class="placeholder">Add lines, then estimate.</p></div>
+    </div>
     <button class="btn-primary" onclick="run()"><i data-lucide="calculator"></i>Estimate tax</button>
   </div>
 </div>
@@ -337,8 +352,16 @@ function pillFor(l){
   return l.taxable?'<span class="pill yes"><i data-lucide="check"></i>Taxable</span>':'<span class="pill no"><i data-lucide="minus"></i>Exempt</span>';
 }
 function show(d){
-  var out=document.getElementById('out');
-  if(d.error){out.innerHTML='<div class="card"><div class="notes"><i data-lucide="alert-triangle"></i><span>'+d.error+'</span></div></div>';icons();return}
+  var lineOut=document.getElementById('lineOut');
+  if(d.error){
+    document.getElementById('sumRate').style.display='none';
+    lineOut.innerHTML='<div class="notes"><i data-lucide="alert-triangle"></i><span>'+d.error+'</span></div>';icons();return;
+  }
+  // persistent header: location + applied rate (no "(estimate)" suffix; override input lives here)
+  document.getElementById('sumLoc').textContent=(d.country||'')+' · '+(d.state||'-')+(d.zip?(' '+d.zip):'');
+  var badge=document.getElementById('sumRate');
+  badge.style.display='inline-block';
+  badge.textContent='Applied rate '+pct(d.combinedRate)+(d.rateOverridden?' (override)':'');
   var lines=(d.lines||[]).map(function(l){
     return '<div class="srow"><div><div class="snm">'+(l.name||'-')+'</div><div class="ssub">'+(l.category||'-')+' &middot; '+fmt(l.amount)+(l.taxable?(' @ '+pct(l.appliedRate)):'')+'</div></div>'+
       '<div class="sright">'+pillFor(l)+'<div class="stax">'+fmt(l.tax)+'</div></div></div>';
@@ -350,26 +373,25 @@ function show(d){
   if(seen.product) breakout+='<div class="tr sub"><span>Product tax</span><span>'+fmt(byKind.product)+'</span></div>';
   if(seen.install) breakout+='<div class="tr sub"><span>Installation tax</span><span>'+fmt(byKind.install)+'</span></div>';
   if(seen.consult) breakout+='<div class="tr sub"><span>Consultation tax</span><span>'+fmt(byKind.consult)+'</span></div>';
-  var rateTag=d.rateOverridden?' (override)':(d.rateEstimated?' (estimate)':'');
-  var blend=d.blended?'<div class="blend"><i data-lucide="scale"></i><span>THD blended-tax case: enter <b>'+(d.blendedRate*100).toFixed(2)+'%</b> on the TAX and TAX-Install lines (total tax / total retail).</span></div>':'';
+  // Blended rate is the actionable figure for THD blended orders — give it top billing.
+  var blend=d.blended?'<div class="blendhero"><div class="bh-label"><i data-lucide="scale"></i>Blended tax rate</div>'+
+    '<div class="bh-rate">'+(d.blendedRate*100).toFixed(2)+'%</div>'+
+    '<div class="bh-sub">Enter on the TAX and TAX-Install lines (total tax ÷ total retail)</div></div>':'';
   var notes=(d.warnings&&d.warnings.length)?'<div class="notes"><i data-lucide="info"></i><div><b>Notes</b><ul>'+d.warnings.map(function(w){return '<li>'+w+'</li>'}).join('')+'</ul></div></div>':'';
-  out.innerHTML='<div class="card">'+
-    '<div class="resulthead"><i data-lucide="receipt-text"></i><span class="loc">'+(d.country||'')+' &middot; '+(d.state||'-')+(d.zip?(' '+d.zip):'')+'</span></div>'+
-    '<div class="ratebadge">Applied rate '+pct(d.combinedRate)+rateTag+'</div>'+
-    lines+
+  lineOut.innerHTML=lines+
     '<div class="totals"><div class="tr"><span>Taxable base</span><span>'+fmt(d.taxableBase)+'</span></div>'+
     breakout+
     '<div class="tr tot"><span>Total tax</span><span>'+fmt(d.totalTax)+'</span></div>'+
     '<div class="tr grand"><span>Order total</span><b>'+fmt(d.orderTotal)+'</b></div></div>'+
-    blend+notes+'</div>';
+    blend+notes;
   icons();
 }
 async function run(){
-  var out=document.getElementById('out');out.innerHTML='<div class="card"><p class="placeholder">Estimating...</p></div>';
+  document.getElementById('lineOut').innerHTML='<p class="placeholder">Estimating...</p>';
   try{
     var res=await fetch('/api/estimate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(collect())});
     show(await res.json());
-  }catch(err){out.innerHTML='<div class="card"><div class="notes"><i data-lucide="alert-triangle"></i><span>'+err+'</span></div></div>';icons();}
+  }catch(err){document.getElementById('lineOut').innerHTML='<div class="notes"><i data-lucide="alert-triangle"></i><span>'+err+'</span></div>';icons();}
 }
 // Build the page, then estimate the seeded example.
 populateStates();
