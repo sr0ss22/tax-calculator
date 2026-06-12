@@ -1,33 +1,29 @@
-# Avalara ZIP rate tables
+# Avalara ZIP rate table
 
-Drop Avalara's free monthly **sales tax rates by ZIP code** CSV files here. Any
-`*.csv` in this folder is embedded into the binary at build time and used as the
-offline US rate source (ahead of the per-state average fallback; TaxJar, when a
-token is set, still takes precedence).
+`us-zip-rates.csv` is the offline US rate source: a consolidated `ZipCode,
+EstimatedCombinedRate, TaxRegionName` table embedded into the binary at build
+time and used ahead of the per-state average (TaxJar, when a token is set, still
+takes precedence). Any `*.csv` in this folder is loaded, so the single
+consolidated file is all that's needed.
 
-## How to get the files
+## Refreshing it monthly
 
-1. Go to https://www.avalara.com/taxrates/en/download-tax-tables.html
-2. Select the state(s) you need and submit the short form. Avalara emails a CSV
-   per state (and refreshes monthly — re-download about once a month).
-3. Save each CSV into this directory (any filename ending in `.csv`, e.g.
-   `MD.csv`, `TX.csv`). Commit them.
+Avalara publishes the free **TAXRATES_ZIP5** bundle (one CSV per state, ~monthly)
+at https://www.avalara.com/taxrates/en/download-tax-tables.html — submit the
+short form, download `TAXRATES_ZIP5.zip`, then regenerate:
 
-## Expected columns
-
-The loader matches columns by name (case/spacing-insensitive), so the standard
-export works as-is:
-
-```
-State, ZipCode, TaxRegionName, EstimatedCombinedRate, StateRate,
-EstimatedCountyRate, EstimatedCityRate, EstimatedSpecialRate, RiskLevel
+```sh
+go run ./tools/buildrates -zip ~/Downloads/TAXRATES_ZIP5.zip
+# or from an unzipped folder of CSVs:
+go run ./tools/buildrates -src ~/Downloads/avalara-csvs
 ```
 
-Only `ZipCode` and `EstimatedCombinedRate` are required; `TaxRegionName` is used
-for display. Rates may be fractions (`0.06`) or percents (`6` / `6%`).
+That rewrites `us-zip-rates.csv` (one file in the diff). Commit and deploy.
 
 ## Notes
 
+- The importer matches columns by name, so Avalara's standard export
+  (`State, ZipCode, TaxRegionName, EstimatedCombinedRate, ...`) loads as-is.
 - ZIP rates are ZIP-centroid estimates, not rooftop-exact. The rate-override
   field in the UI remains the way to key an exact local rate.
 - No CSV here is fine — the app falls back to the per-state average automatically.

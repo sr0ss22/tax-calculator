@@ -32,6 +32,17 @@ NY,10001-1234,NEW YORK CITY,8.875%,0.04,0.04,0,0.00375,2
 	}
 }
 
+// TestEmbeddedZipTable confirms the consolidated Avalara table is embedded and
+// loads. Skips when no CSV is present so the suite passes before one is added.
+func TestEmbeddedZipTable(t *testing.T) {
+	if len(zipRates) == 0 {
+		t.Skip("no Avalara ZIP table embedded (estimate/ratedata/*.csv)")
+	}
+	if _, ok := zipRateFor("78664"); !ok {
+		t.Errorf("expected a rate for ZIP 78664; table has %d entries", len(zipRates))
+	}
+}
+
 func TestParseRate(t *testing.T) {
 	cases := []struct {
 		in   string
