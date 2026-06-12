@@ -35,12 +35,16 @@
   input,select{font:inherit;padding:9px 11px;border:1px solid #d4d7dc;border-radius:9px;background:#fff;color:var(--ink)}
   input:focus,select:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 3px rgba(251,94,30,.15)}
   /* segmented / toggle buttons */
-  .seg{display:inline-flex;border:1px solid #d4d7dc;border-radius:9px;overflow:hidden;background:#fff}
-  .seg .tog{background:#fff;border:0;border-right:1px solid #e6e8eb;padding:8px 11px;color:#6b7280;display:inline-flex;align-items:center;gap:6px;font:inherit;font-weight:600;cursor:pointer}
-  .seg .tog:last-child{border-right:0}
+  .seg{display:inline-flex;border:1px solid #d4d7dc;border-radius:9px;background:#fff}
+  .seg .tog{position:relative;background:#fff;border:0;border-right:1px solid #e6e8eb;padding:8px 11px;color:#6b7280;display:inline-flex;align-items:center;gap:6px;font:inherit;font-weight:600;cursor:pointer}
+  .seg .tog:first-child{border-top-left-radius:8px;border-bottom-left-radius:8px}
+  .seg .tog:last-child{border-right:0;border-top-right-radius:8px;border-bottom-right-radius:8px}
   .seg .tog svg{width:16px;height:16px}
   .seg .tog:hover:not(.active){background:#f7f8fa}
   .seg .tog.active{background:var(--orange);color:#fff}
+  /* hover label for icon-only toggles (not clipped — .seg is overflow:visible) */
+  .seg .tog[data-tip]:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 7px);left:50%;transform:translateX(-50%);background:#15161a;color:#fff;font-size:11px;font-weight:600;padding:4px 8px;border-radius:6px;white-space:nowrap;z-index:5;pointer-events:none}
+  .seg .tog[data-tip]:hover::before{content:"";position:absolute;bottom:calc(100% + 2px);left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:#15161a;z-index:5;pointer-events:none}
   button{font:inherit;cursor:pointer}
   .btn-primary{background:#15161a;color:#fff;border:0;border-radius:9px;padding:12px 20px;font-size:14px;font-weight:600;display:inline-flex;align-items:center;gap:8px;width:100%;justify-content:center;margin-top:2px}
   .btn-primary:hover{background:#000}
@@ -83,6 +87,21 @@
   .blend svg,.notes svg{width:15px;height:15px;flex:none;margin-top:1px}
   .notes ul{margin:4px 0 0;padding-left:16px}
   .placeholder{color:var(--muted);font-size:13px;text-align:center;padding:24px 8px}
+  /* consult line (no toggles — just a label) */
+  .consultLabel{display:inline-flex;align-items:center;gap:7px;padding:8px 11px;border:1px solid #d4d7dc;border-radius:9px;background:#f7f8fa;color:#2a2e35;font-weight:600;white-space:nowrap}
+  .consultLabel svg{width:16px;height:16px;color:var(--orange)}
+  /* add-line modal */
+  .modal-overlay{position:fixed;inset:0;background:rgba(16,18,22,.45);display:none;align-items:center;justify-content:center;z-index:50}
+  .modal-overlay.open{display:flex}
+  .modal{background:#fff;border-radius:14px;padding:22px;width:min(440px,92vw);box-shadow:0 16px 48px rgba(0,0,0,.22)}
+  .modal h3{margin:0 0 4px;font-size:16px;font-weight:700}
+  .modal p{margin:0 0 16px;color:var(--muted);font-size:13px}
+  .typegrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .typecard{display:flex;flex-direction:column;align-items:center;gap:9px;padding:18px 10px;border:1px solid #d4d7dc;border-radius:11px;background:#fff;cursor:pointer;font-weight:600;font-size:13px;color:#2a2e35}
+  .typecard svg{width:24px;height:24px;color:var(--orange)}
+  .typecard:hover{border-color:var(--orange);background:#fff7f3}
+  .typecard:disabled{opacity:.4;cursor:not-allowed}
+  .typecard:disabled:hover{border-color:#d4d7dc;background:#fff}
 </style>
 </head>
 <body>
@@ -116,9 +135,9 @@
 
     <div class="card">
       <h2><i data-lucide="layers"></i>Lines</h2>
-      <p class="hint" style="margin:0 0 12px">Pick a type (Product, Install, or Consultation) and category. Install labor is taxed by per-category rules, so add Install Blinds, Install Shutters, and Install Drapery as their own lines.</p>
+      <p class="hint" style="margin:0 0 12px">Add Product or Install lines and pick a category. Install labor is taxed by per-category rules, so add Install Blinds, Install Shutters, and Install Drapery as their own lines. A Design Consultation can be added once as its own line.</p>
       <div id="lines"></div>
-      <button type="button" class="btn-sec" onclick="addLine()"><i data-lucide="plus"></i>Add line</button>
+      <button type="button" class="btn-sec" onclick="openTypeModal()"><i data-lucide="plus"></i>Add line</button>
     </div>
   </div>
 
@@ -129,11 +148,25 @@
 </div>
 </div>
 
+<div class="modal-overlay" id="typeModal" onclick="if(event.target===this)closeTypeModal()">
+  <div class="modal" role="dialog" aria-modal="true" aria-label="Add a line">
+    <h3>Add a line</h3>
+    <p>What kind of line do you want to add?</p>
+    <div class="typegrid">
+      <button type="button" class="typecard" data-type="product" onclick="chooseType('product')"><i data-lucide="package"></i>Product</button>
+      <button type="button" class="typecard" data-type="install" onclick="chooseType('install')"><i data-lucide="wrench"></i>Install</button>
+      <button type="button" class="typecard" data-type="consult" onclick="chooseType('consult')"><i data-lucide="swatch-book"></i>Consultation</button>
+    </div>
+  </div>
+</div>
+
 <script>
 var US_STATES=['Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware','District of Columbia','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia','Wisconsin','Wyoming'];
 var CA_PROVINCES=['Alberta','British Columbia','Manitoba','New Brunswick','Newfoundland & Labrador','Northwest Territories','Nova Scotia','Nunavut','Ontario','Prince Edward Island','Quebec','Saskatchewan','Yukon Territory'];
 var TYPES=[['product','package','Product','Product'],['install','wrench','Install','Install'],['consult','swatch-book','Design consultation','Consult']];
-var CATS=[['blinds','rows-3','Blinds'],['shutters','columns-3','Shutters'],['draperies','curtain','Draperies']];
+// Consultation is added via the Add-line modal, not as a per-line toggle.
+var TYPES_PI=[['product','package','Product','Product'],['install','wrench','Install','Install']];
+var CATS=[['blinds','rows-3','Blinds'],['shutters','columns-3','Shutters'],['draperies','curtain','Drapery']];
 function icons(){ if(window.lucide) lucide.createIcons(); }
 // Lucide has no curtain icon, so draperies uses a small inline curtain SVG.
 function iconHTML(name){
@@ -152,7 +185,8 @@ function populateStates(){
 function tog(groupCls,items,sel,withText){
   return '<div class="seg '+groupCls+'">'+items.map(function(it){
     var txt=withText?('<span>'+(it[3]||it[2])+'</span>'):'';
-    return '<button type="button" class="tog'+(it[0]===sel?' active':'')+'" data-val="'+it[0]+'" title="'+it[2]+'" onclick="pickTog(this)">'+iconHTML(it[1])+txt+'</button>';
+    var tip=withText?'':(' data-tip="'+it[2]+'"');
+    return '<button type="button" class="tog'+(it[0]===sel?' active':'')+'" data-val="'+it[0]+'"'+tip+' title="'+it[2]+'" onclick="pickTog(this)">'+iconHTML(it[1])+txt+'</button>';
   }).join('')+'</div>';
 }
 function pickTog(btn){
@@ -173,24 +207,50 @@ function lineName(kind,cat){
   return kind==='install'?('Install '+base):base;
 }
 function addLine(cat,amt,kind){
-  kind=kind||'product';cat=cat||'blinds';
+  kind=kind||'product';
   var div=document.createElement('div');div.className='lineRow';
-  div.innerHTML='<div class="fld"><span class="cap">Work Type</span>'+tog('typegrp',TYPES,kind,true)+'</div>'+
-    '<div class="fld catwrap"><span class="cap">Product Type</span>'+tog('catgrp',CATS,cat,false)+'</div>'+
-    '<div class="fld"><span class="cap">Amount</span><input class="lamt" type="number" step="0.01" placeholder="0.00" value="'+(amt!=null?amt:'')+'"></div>'+
-    '<button type="button" class="btn-x" title="Remove line" onclick="this.closest(\'.lineRow\').remove()"><i data-lucide="trash-2"></i></button>';
+  var amtFld='<div class="fld"><span class="cap">Amount</span><input class="lamt" type="number" step="0.01" placeholder="0.00" value="'+(amt!=null?amt:'')+'"></div>';
+  var rmBtn='<button type="button" class="btn-x" title="Remove line" onclick="this.closest(\'.lineRow\').remove()"><i data-lucide="trash-2"></i></button>';
+  if(kind==='consult'){
+    div.dataset.kind='consult';
+    div.innerHTML='<div class="fld name"><span class="cap">Work Type</span><span class="consultLabel">'+iconHTML('swatch-book')+'<span>Design Consultation</span></span></div>'+amtFld+rmBtn;
+  }else{
+    cat=cat||'blinds';
+    div.dataset.kind='pi';
+    div.innerHTML='<div class="fld"><span class="cap">Work Type</span>'+tog('typegrp',TYPES_PI,kind,true)+'</div>'+
+      '<div class="fld catwrap"><span class="cap">Product Type</span>'+tog('catgrp',CATS,cat,false)+'</div>'+amtFld+rmBtn;
+  }
   document.getElementById('lines').appendChild(div);
-  if(kind==='consult'){var cw=div.querySelector('.catwrap');if(cw)cw.style.display='none';}
   icons();
+}
+function hasConsult(){return !!document.querySelector('#lines .lineRow[data-kind="consult"]');}
+function openTypeModal(){
+  var m=document.getElementById('typeModal');
+  var cbtn=m.querySelector('[data-type="consult"]');
+  var taken=hasConsult();
+  cbtn.disabled=taken;
+  cbtn.title=taken?'A consultation line is already added':'';
+  m.classList.add('open');
+}
+function closeTypeModal(){document.getElementById('typeModal').classList.remove('open');}
+function chooseType(kind){
+  if(kind==='consult'&&hasConsult())return;
+  closeTypeModal();
+  addLine(kind==='consult'?null:'blinds',null,kind);
 }
 function fmt(v){return (v||0).toLocaleString('en-US',{style:'currency',currency:'USD'})}
 function pct(r){return ((r||0)*100).toFixed(3)+'%'}
 function collect(){
   var lines=[];
   document.querySelectorAll('#lines .lineRow').forEach(function(row){
-    var kind=row.querySelector('.typegrp .tog.active').dataset.val;
-    var catBtn=row.querySelector('.catgrp .tog.active');
-    var cat=catBtn?catBtn.dataset.val:'';
+    var kind,cat='';
+    if(row.dataset.kind==='consult'){
+      kind='consult';
+    }else{
+      kind=row.querySelector('.typegrp .tog.active').dataset.val;
+      var catBtn=row.querySelector('.catgrp .tog.active');
+      cat=catBtn?catBtn.dataset.val:'';
+    }
     var amt=parseFloat(row.querySelector('.lamt').value);
     if(!isNaN(amt)) lines.push({name:lineName(kind,cat),category:cat,kind:kind,amount:amt});
   });
