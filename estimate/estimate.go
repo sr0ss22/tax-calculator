@@ -249,8 +249,27 @@ func (e *Estimator) estimateUS(ctx context.Context, req Request) (Result, error)
 	if order.HasUnmapped {
 		res.Warnings = append(res.Warnings, "one or more lines were not found in the taxability matrix")
 	}
-	if order.LaborMayDiverge {
-		res.Warnings = append(res.Warnings, "labor is taxed differently from product in this state; labor-only lines may be under-estimated")
+	// Labor-divergence warning: the matrix flags every line in a category where
+	// install labor is taxed differently from product. That only risks an
+	// under-estimate when the labor is hidden in a product/installed-package line
+	// with no explicit install line of its own. When the quote already has an
+	// install line for that category (RLN installs), the labor is computed with
+	// the Additional Labor line type and is correct, so we suppress the warning.
+	installed := map[taxestimate.Category]bool{}
+	for i := range built {
+		if built[i].kind == "install" {
+			installed[order.Lines[i].Input.Category] = true
+		}
+	}
+	laborRisk := false
+	for i := range order.Lines {
+		if order.Lines[i].LaborMayDiverge && built[i].kind != "install" && !installed[order.Lines[i].Input.Category] {
+			laborRisk = true
+			break
+		}
+	}
+	if laborRisk {
+		res.Warnings = append(res.Warnings, "labor is taxed differently from product in this state; add an install line for each product so install labor is estimated correctly")
 	}
 	return res, nil
 }

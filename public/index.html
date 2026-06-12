@@ -78,6 +78,11 @@
   .blendhero .bh-label svg{width:14px;height:14px}
   .blendhero .bh-rate{font-size:30px;font-weight:800;color:var(--orange-d);line-height:1.15;margin:2px 0}
   .blendhero .bh-sub{font-size:12px;color:#7a5200}
+  /* applied-rate hero — the jurisdiction rate to key into the order system */
+  .ratehero{margin-top:0;margin-bottom:14px;background:linear-gradient(135deg,#eef4ff,#e1ebff);border-color:#c3d4f5}
+  .ratehero .bh-label{color:#2b50a8}
+  .ratehero .bh-rate{color:#1f3f8a}
+  .ratehero .bh-sub{color:#3a4a63}
   .srow{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid #eef0f2}
   .srow:first-of-type{border-top:0}
   .snm{font-weight:600}
@@ -173,7 +178,6 @@
         <span class="loc" id="sumLoc">Estimate</span>
         <label class="rateOv">Rate override<input id="rate" type="number" step="0.0001" placeholder="auto" onchange="run()"></label>
       </div>
-      <div class="ratebadge" id="sumRate" style="display:none"></div>
       <div id="lineOut"><p class="placeholder">Add lines, then estimate.</p></div>
     </div>
     <button class="btn-primary" onclick="run()"><i data-lucide="calculator"></i>Estimate tax</button>
@@ -379,14 +383,13 @@ function pillFor(l){
 function show(d){
   var lineOut=document.getElementById('lineOut');
   if(d.error){
-    document.getElementById('sumRate').style.display='none';
     lineOut.innerHTML='<div class="notes"><i data-lucide="alert-triangle"></i><span>'+d.error+'</span></div>';icons();return;
   }
-  // persistent header: location + applied rate (no "(estimate)" suffix; override input lives here)
   document.getElementById('sumLoc').textContent=(d.country||'')+' · '+(d.state||'-')+(d.zip?(' '+d.zip):'');
-  var badge=document.getElementById('sumRate');
-  badge.style.display='inline-block';
-  badge.textContent='Applied rate '+pct(d.combinedRate)+(d.rateOverridden?' (override)':'');
+  // Applied tax rate as a hero — the jurisdiction rate the user keys into the order system.
+  var rateHero='<div class="blendhero ratehero"><div class="bh-label"><i data-lucide="percent"></i>Applied tax rate</div>'+
+    '<div class="bh-rate">'+pct(d.combinedRate)+'</div>'+
+    '<div class="bh-sub">Enter this rate into the order system'+(d.rateOverridden?' (manual override)':'')+'</div></div>';
   var lines=(d.lines||[]).map(function(l){
     return '<div class="srow"><div><div class="snm">'+(l.name||'-')+'</div><div class="ssub">'+(l.category||'-')+' &middot; '+fmt(l.amount)+(l.taxable?(' @ '+pct(l.appliedRate)):'')+'</div></div>'+
       '<div class="sright">'+pillFor(l)+'<div class="stax">'+fmt(l.tax)+'</div></div></div>';
@@ -403,7 +406,7 @@ function show(d){
     '<div class="bh-rate">'+(d.blendedRate*100).toFixed(2)+'%</div>'+
     '<div class="bh-sub">Enter on the TAX and TAX-Install lines (total tax ÷ total retail)</div></div>':'';
   var notes=(d.warnings&&d.warnings.length)?'<div class="notes"><i data-lucide="info"></i><div><b>Notes</b><ul>'+d.warnings.map(function(w){return '<li>'+w+'</li>'}).join('')+'</ul></div></div>':'';
-  lineOut.innerHTML=lines+
+  lineOut.innerHTML=rateHero+lines+
     '<div class="totals"><div class="tr"><span>Taxable base</span><span>'+fmt(d.taxableBase)+'</span></div>'+
     breakout+
     '<div class="tr tot"><span>Total tax</span><span>'+fmt(d.totalTax)+'</span></div>'+
