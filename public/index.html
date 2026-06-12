@@ -218,7 +218,7 @@ function addLine(cat,amt,kind){
     cat=cat||'blinds';
     div.dataset.kind='pi';
     div.innerHTML='<div class="fld"><span class="cap">Work Type</span>'+tog('typegrp',TYPES_PI,kind,true)+'</div>'+
-      '<div class="fld catwrap"><span class="cap">Product Type</span>'+tog('catgrp',CATS,cat,false)+'</div>'+amtFld+rmBtn;
+      '<div class="fld catwrap"><span class="cap">Product Type</span>'+tog('catgrp',CATS,cat,true)+'</div>'+amtFld+rmBtn;
   }
   document.getElementById('lines').appendChild(div);
   icons();
