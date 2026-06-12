@@ -3,6 +3,7 @@ package estimate
 import (
 	"context"
 	"math"
+	"strings"
 	"testing"
 )
 
@@ -50,8 +51,9 @@ func TestEstimate_TexasTHD_Blended_WithOverride(t *testing.T) {
 	}
 }
 
-func TestEstimate_NoRateSource_Warns(t *testing.T) {
+func TestEstimate_FallsBackToStateAverage(t *testing.T) {
 	e := newEstimator(t)
+	// No override and no TaxJar token -> the static TX state average combined rate.
 	got, err := e.Estimate(context.Background(), Request{
 		State: "TX",
 		Lines: []Line{{Name: "Blinds", Category: "blinds", Amount: 1000}},
@@ -59,11 +61,23 @@ func TestEstimate_NoRateSource_Warns(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Estimate() error = %v", err)
 	}
-	if got.TotalTax != 0 {
-		t.Errorf("TotalTax = %v, want 0 with no rate source", got.TotalTax)
+	if !approxEq(got.CombinedRate, 0.0820) {
+		t.Errorf("CombinedRate = %v, want 0.0820 (TX state average)", got.CombinedRate)
 	}
-	if len(got.Warnings) == 0 {
-		t.Errorf("expected a no-rate-source warning")
+	if !approxEq(got.TotalTax, 82) {
+		t.Errorf("TotalTax = %v, want 82 (1000 * 0.0820)", got.TotalTax)
+	}
+	if !got.RateEstimated {
+		t.Errorf("RateEstimated = false, want true for a state-average estimate")
+	}
+	found := false
+	for _, w := range got.Warnings {
+		if strings.Contains(w, "state average") {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected a state-average warning, got %v", got.Warnings)
 	}
 }
 

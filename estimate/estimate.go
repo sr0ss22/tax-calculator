@@ -213,18 +213,25 @@ func (e *Estimator) estimateUS(ctx context.Context, req Request) (Result, error)
 	}
 
 	var rate taxestimate.RateResult
-	switch {
-	case req.RateOverride > 0:
+	if req.RateOverride > 0 {
 		rate = taxestimate.RateResult{Zip: req.Zip, CombinedRate: req.RateOverride, Jurisdictions: "manual override"}
 		res.RateOverridden = true
-	case e.rates != nil && strings.TrimSpace(req.Zip) != "":
-		rate = e.rates.LookupRate(ctx, req.Zip)
-		if rate.Estimated {
-			res.Warnings = append(res.Warnings, "rate estimate unavailable for ZIP; enter a rate override")
+	} else {
+		// Prefer a live TaxJar lookup when configured; otherwise, or when it returns
+		// nothing usable, fall back to the static per-state average combined rate so
+		// the estimate works with no API. The rep can always enter an exact override.
+		if e.rates != nil && strings.TrimSpace(req.Zip) != "" {
+			rate = e.rates.LookupRate(ctx, req.Zip)
 		}
-	default:
-		rate = taxestimate.RateResult{Zip: req.Zip, Estimated: true}
-		res.Warnings = append(res.Warnings, "no rate source (no TaxJar token and no rate override); US tax shown as 0")
+		if rate.CombinedRate == 0 {
+			if avg, ok := stateAverageRate(state); ok {
+				rate = taxestimate.RateResult{Zip: req.Zip, CombinedRate: avg, Jurisdictions: "state average combined rate (Tax Foundation 2026)", Estimated: true}
+				res.Warnings = append(res.Warnings, "using the state average combined rate (estimate); enter a rate override for the exact local rate")
+			} else {
+				rate = taxestimate.RateResult{Zip: req.Zip, Estimated: true}
+				res.Warnings = append(res.Warnings, "no rate available for this state; enter a rate override")
+			}
+		}
 	}
 	res.RateEstimated = rate.Estimated
 
