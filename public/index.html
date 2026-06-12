@@ -32,6 +32,9 @@
   .hint{color:var(--muted);font-size:12.5px;margin:10px 0 0}
   .row{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end}
   label{display:flex;flex-direction:column;gap:5px;font-size:12.5px;font-weight:500;color:#3a3f48}
+  .fldcol{display:flex;flex-direction:column;gap:5px}
+  .fldlbl{font-size:12.5px;font-weight:500;color:#3a3f48}
+  .zipin{width:84px}
   input,select{font:inherit;padding:9px 11px;border:1px solid #d4d7dc;border-radius:9px;background:#fff;color:var(--ink)}
   input:focus,select:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 3px rgba(251,94,30,.15)}
   /* segmented / toggle buttons */
@@ -139,18 +142,14 @@
       <h2><i data-lucide="map-pin"></i>Location and channel</h2>
       <div class="row">
         <label>State or province<select id="state" onchange="run()"></select></label>
-        <label>ZIP (US, optional)<input id="zip" placeholder="ZIP" onchange="run()"></label>
-      </div>
-      <div style="margin-top:14px;display:flex;gap:26px;flex-wrap:wrap">
-        <div>
-          <label style="margin-bottom:6px">Channel</label>
+        <label>ZIP (US)<input id="zip" class="zipin" maxlength="10" placeholder="ZIP" onchange="run()"></label>
+        <div class="fldcol"><span class="fldlbl">Channel</span>
           <div class="seg" id="channel">
             <button type="button" class="tog active" data-val="THD" onclick="pickTog(this)"><i data-lucide="house"></i>THD</button>
             <button type="button" class="tog" data-val="partners" onclick="pickTog(this)"><i data-lucide="store"></i>Other</button>
           </div>
         </div>
-        <div>
-          <label style="margin-bottom:6px">Install</label>
+        <div class="fldcol"><span class="fldlbl">Install</span>
           <div class="seg" id="install">
             <button type="button" class="tog active" data-val="RLN" onclick="pickInstall(this)"><i data-lucide="hard-hat"></i>RLN</button>
             <button type="button" class="tog" data-val="self" onclick="pickInstall(this)"><i data-lucide="user"></i>Self</button>
@@ -222,17 +221,21 @@ function selectByValue(sel,name){
   for(var i=0;i<sel.options.length;i++){if(sel.options[i].value&&normName(sel.options[i].value)===t){sel.value=sel.options[i].value;return true;}}
   return false;
 }
-// IP-based location (no permission prompt) via ipwho.is — CORS-enabled, no key.
-// Fills State (region) only; ZIP is left for the user to enter.
+// Detect the state on load (no permission prompt). Fills State only; ZIP is manual.
+// Primary: Vercel edge geo via our /api/geo (same-origin, reliable). Fallback:
+// ipwho.is (covers local dev where edge headers are absent).
 async function detectLocation(){
   var sel=document.getElementById('state');var located=false;
   try{
-    var res=await fetch('https://ipwho.is/');
-    if(res.ok){
-      var g=await res.json();
-      if(g.success&&g.region&&selectByValue(sel,g.region)) located=true;
-    }
-  }catch(e){/* offline or blocked — fall back to manual entry */}
+    var r=await fetch('/api/geo');
+    if(r.ok){var g=await r.json();if(g.region&&selectByValue(sel,g.region)) located=true;}
+  }catch(e){}
+  if(!located){
+    try{
+      var r2=await fetch('https://ipwho.is/');
+      if(r2.ok){var g2=await r2.json();if(g2.success&&g2.region&&selectByValue(sel,g2.region)) located=true;}
+    }catch(e){}
+  }
   if(located) run();
   else document.getElementById('lineOut').innerHTML='<p class="placeholder">Pick a state or province to estimate.</p>';
 }

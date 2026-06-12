@@ -320,6 +320,36 @@ var stateByCode = map[string]string{
 	"WV": "West Virginia", "WI": "Wisconsin", "WY": "Wyoming",
 }
 
+// caProvinceByCode maps ISO codes to the province names the UI/calculator use.
+var caProvinceByCode = map[string]string{
+	"AB": "Alberta", "BC": "British Columbia", "MB": "Manitoba",
+	"NB": "New Brunswick", "NL": "Newfoundland & Labrador",
+	"NT": "Northwest Territories", "NS": "Nova Scotia", "NU": "Nunavut",
+	"ON": "Ontario", "PE": "Prince Edward Island", "QC": "Quebec",
+	"SK": "Saskatchewan", "YT": "Yukon Territory",
+}
+
+// ResolveRegion turns an ISO/USPS region code (as supplied by Vercel's edge geo
+// headers) into the full region name the calculator expects. country is the ISO
+// country code ("US" / "CA"). Unknown codes are returned unchanged.
+func ResolveRegion(country, region string) string {
+	r := strings.TrimSpace(region)
+	if r == "" {
+		return ""
+	}
+	switch strings.ToUpper(strings.TrimSpace(country)) {
+	case "CA":
+		if full, ok := caProvinceByCode[strings.ToUpper(r)]; ok {
+			return full
+		}
+	default: // US or unspecified
+		if full, ok := stateByCode[strings.ToUpper(r)]; ok {
+			return full
+		}
+	}
+	return r
+}
+
 // stateFor resolves a state code or name to the matrix state name.
 func stateFor(raw string) (string, bool) {
 	s := strings.TrimSpace(raw)
