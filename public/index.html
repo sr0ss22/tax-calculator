@@ -61,7 +61,8 @@
   .fld{display:flex;flex-direction:column;gap:5px}
   .fld.name{flex:1 1 130px;min-width:120px}
   .fld.amt{margin-left:auto}
-  .cap{font-size:11px;font-weight:600;color:#6b7280}
+  .cap{font-size:11px;font-weight:600;color:#6b7280;display:inline-flex;align-items:center;gap:5px}
+  .cap svg{width:13px;height:13px;color:var(--orange)}
   .lname{width:100%}
   .lamt{width:120px}
   .btn-x{position:absolute;top:8px;right:8px;background:transparent;border:0;color:#b0b4bb;padding:6px;border-radius:8px;line-height:0}
@@ -87,6 +88,8 @@
   .ratehero .bh-sub{color:#3a4a63}
   .srow{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid #eef0f2}
   .srow:first-of-type{border-top:0}
+  .srow-l{display:flex;align-items:flex-start;gap:8px}
+  .srow-l svg{width:16px;height:16px;color:var(--muted);margin-top:2px;flex:none}
   .snm{font-weight:600}
   .ssub{color:var(--muted);font-size:12px}
   .sright{text-align:right;white-space:nowrap}
@@ -368,8 +371,8 @@ function addProductLine(cat,prodAmt,instAmt){
   g.innerHTML='<div class="lineRow productRow">'+
       '<div class="fld"><span class="cap">Product Type</span>'+tog('catgrp',CATS,cat,true)+'</div>'+
       '<div class="amts">'+
-        '<div class="fld"><span class="cap">Product Amount</span><input class="lamt prodAmt" type="number" step="0.01" placeholder="0.00" value="'+(prodAmt!=null?prodAmt:'')+'"></div>'+
-        '<div class="fld instAmtFld"><span class="cap">Install Amount</span><input class="lamt instAmt" type="number" step="0.01" placeholder="0.00" value="'+(instAmt!=null?instAmt:'')+'"></div>'+
+        '<div class="fld"><span class="cap">'+iconHTML('blinds')+'Product Amount</span><input class="lamt prodAmt" type="number" step="0.01" placeholder="0.00" value="'+(prodAmt!=null?prodAmt:'')+'"></div>'+
+        '<div class="fld instAmtFld"><span class="cap">'+iconHTML('drill')+'Install Amount</span><input class="lamt instAmt" type="number" step="0.01" placeholder="0.00" value="'+(instAmt!=null?instAmt:'')+'"></div>'+
       '</div>'+
       rmBtn+
     '</div>';
@@ -476,7 +479,8 @@ function show(d){
       '<div class="bh-sub">Enter this rate into the order system'+(d.rateOverridden?' (manual override)':'')+'</div></div>';
   }
   var lines=(d.lines||[]).map(function(l){
-    return '<div class="srow"><div><div class="snm">'+(l.name||'-')+'</div><div class="ssub">'+(l.category||'-')+' &middot; '+fmt(l.amount)+(l.taxable?(' @ '+pct(l.appliedRate)):'')+'</div></div>'+
+    var ic=l.kind==='install'?'drill':(l.kind==='consult'?'swatch-book':'blinds');
+    return '<div class="srow"><div class="srow-l">'+iconHTML(ic)+'<div><div class="snm">'+(l.name||'-')+'</div><div class="ssub">'+(l.category||'-')+' &middot; '+fmt(l.amount)+(l.taxable?(' @ '+pct(l.appliedRate)):'')+'</div></div></div>'+
       '<div class="sright">'+pillFor(l)+'<div class="stax">'+fmt(l.tax)+'</div></div></div>';
   }).join('');
   // Tax broken out by line kind (product / install / consult).
