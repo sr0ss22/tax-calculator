@@ -138,8 +138,8 @@
     <div class="card">
       <h2><i data-lucide="map-pin"></i>Location and channel</h2>
       <div class="row">
-        <label>State or province<select id="state"></select></label>
-        <label>ZIP (US, optional)<input id="zip" value="78664" placeholder="78664"></label>
+        <label>State or province<select id="state" onchange="run()"></select></label>
+        <label>ZIP (US, optional)<input id="zip" placeholder="ZIP" onchange="run()"></label>
       </div>
       <div style="margin-top:14px;display:flex;gap:26px;flex-wrap:wrap">
         <div>
@@ -207,12 +207,34 @@ function iconHTML(name){
 }
 function populateStates(){
   var sel=document.getElementById('state');
+  var ph=document.createElement('option');ph.value='';ph.textContent='Select state / province…';sel.appendChild(ph);
   function group(label,arr){
     var og=document.createElement('optgroup');og.label=label;
     arr.forEach(function(s){var o=document.createElement('option');o.value=s;o.textContent=s;og.appendChild(o);});
     sel.appendChild(og);
   }
-  group('United States',US_STATES);group('Canada',CA_PROVINCES);sel.value='Texas';
+  group('United States',US_STATES);group('Canada',CA_PROVINCES);sel.value='';
+}
+// Match a detected region name to an option value, tolerant of "&"/"and", case, and punctuation.
+function normName(s){return (s||'').toLowerCase().replace(/&/g,'and').replace(/[^a-z]/g,'');}
+function selectByValue(sel,name){
+  var t=normName(name);if(!t)return false;
+  for(var i=0;i<sel.options.length;i++){if(sel.options[i].value&&normName(sel.options[i].value)===t){sel.value=sel.options[i].value;return true;}}
+  return false;
+}
+// IP-based location (no permission prompt). Fills State + ZIP, then estimates.
+async function detectLocation(){
+  var sel=document.getElementById('state');var located=false;
+  try{
+    var res=await fetch('https://ipapi.co/json/');
+    if(res.ok){
+      var g=await res.json();
+      if(g.region&&selectByValue(sel,g.region)) located=true;
+      if(g.postal&&g.country_code==='US') document.getElementById('zip').value=g.postal;
+    }
+  }catch(e){/* offline or blocked — fall back to manual entry */}
+  if(located) run();
+  else document.getElementById('lineOut').innerHTML='<p class="placeholder">Pick a state or province to estimate.</p>';
 }
 function tog(groupCls,items,sel,withText){
   return '<div class="seg '+groupCls+'">'+items.map(function(it){
@@ -399,7 +421,7 @@ addProductLine('draperies',1500,500);
 addProductLine('blinds',1000,500);
 addConsultLine(150);
 icons();
-run();
+detectLocation();
 </script>
 </body>
 </html>
