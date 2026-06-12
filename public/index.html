@@ -48,8 +48,11 @@
   .btn-sec{background:#fff;border:1px solid #d4d7dc;color:#2a2e35;border-radius:9px;padding:8px 13px;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:7px}
   .btn-sec:hover{background:#f7f8fa}
   .btn-sec svg{width:15px;height:15px}
-  .lineRow{display:flex;gap:10px;align-items:center;padding:9px 10px;border:1px solid #eef0f2;border-radius:10px;margin-bottom:8px;background:#fcfcfd;flex-wrap:wrap}
-  .lname{flex:1 1 120px;min-width:110px}
+  .lineRow{display:flex;gap:12px;align-items:flex-end;padding:10px;border:1px solid #eef0f2;border-radius:10px;margin-bottom:8px;background:#fcfcfd;flex-wrap:wrap}
+  .fld{display:flex;flex-direction:column;gap:5px}
+  .fld.name{flex:1 1 130px;min-width:120px}
+  .cap{font-size:11px;font-weight:600;color:#6b7280}
+  .lname{width:100%}
   .lamt{width:108px}
   .btn-x{background:transparent;border:0;color:#b0b4bb;padding:8px;border-radius:8px}
   .btn-x:hover{background:var(--red-bg);color:var(--red)}
@@ -130,9 +133,14 @@
 <script>
 var US_STATES=['Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware','District of Columbia','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia','Wisconsin','Wyoming'];
 var CA_PROVINCES=['Alberta','British Columbia','Manitoba','New Brunswick','Newfoundland & Labrador','Northwest Territories','Nova Scotia','Nunavut','Ontario','Prince Edward Island','Quebec','Saskatchewan','Yukon Territory'];
-var TYPES=[['product','package','Product'],['install','wrench','Install'],['consult','ruler','Consultation fee']];
-var CATS=[['blinds','rows-3','Blinds'],['shutters','columns-3','Shutters'],['draperies','waves','Draperies']];
+var TYPES=[['product','package','Product'],['install','wrench','Install'],['consult','swatch-book','Design consultation']];
+var CATS=[['blinds','rows-3','Blinds'],['shutters','columns-3','Shutters'],['draperies','curtain','Draperies']];
 function icons(){ if(window.lucide) lucide.createIcons(); }
+// Lucide has no curtain icon, so draperies uses a small inline curtain SVG.
+function iconHTML(name){
+  if(name==='curtain') return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M3 3h18"/><path d="M6 3v13c0 2-1 3-3 4"/><path d="M18 3v13c0 2 1 3 3 4"/><path d="M10 3v18"/><path d="M14 3v18"/></svg>';
+  return '<i data-lucide="'+name+'"></i>';
+}
 function populateStates(){
   var sel=document.getElementById('state');
   function group(label,arr){
@@ -144,7 +152,7 @@ function populateStates(){
 }
 function tog(groupCls,items,sel){
   return '<div class="seg '+groupCls+'">'+items.map(function(it){
-    return '<button type="button" class="tog'+(it[0]===sel?' active':'')+'" data-val="'+it[0]+'" title="'+it[2]+'" onclick="pickTog(this)"><i data-lucide="'+it[1]+'"></i></button>';
+    return '<button type="button" class="tog'+(it[0]===sel?' active':'')+'" data-val="'+it[0]+'" title="'+it[2]+'" onclick="pickTog(this)">'+iconHTML(it[1])+'</button>';
   }).join('')+'</div>';
 }
 function pickTog(btn){
@@ -152,17 +160,25 @@ function pickTog(btn){
   grp.querySelectorAll('.tog').forEach(function(b){b.classList.remove('active')});
   btn.classList.add('active');
   if(grp.classList.contains('typegrp')){
-    var row=btn.closest('.lineRow');var cw=row.querySelector('.catwrap');
-    if(cw) cw.style.display=(btn.dataset.val==='consult')?'none':'';
+    var row=btn.closest('.lineRow');
+    var cw=row.querySelector('.catwrap');
+    var nm=row.querySelector('.lname');
+    if(btn.dataset.val==='consult'){
+      if(cw) cw.style.display='none';
+      if(nm) nm.value='Design Consultation';
+    }else{
+      if(cw) cw.style.display='';
+      if(nm && nm.value==='Design Consultation') nm.value='';
+    }
   }
 }
 function addLine(name,cat,amt,kind){
   kind=kind||'product';cat=cat||'blinds';
   var div=document.createElement('div');div.className='lineRow';
-  div.innerHTML='<input class="lname" placeholder="Line name" value="'+(name||'')+'">'+
-    tog('typegrp',TYPES,kind)+
-    '<span class="catwrap">'+tog('catgrp',CATS,cat)+'</span>'+
-    '<input class="lamt" type="number" step="0.01" placeholder="0.00" value="'+(amt!=null?amt:'')+'">'+
+  div.innerHTML='<div class="fld name"><span class="cap">Name</span><input class="lname" placeholder="Line name" value="'+(name||'')+'"></div>'+
+    '<div class="fld"><span class="cap">Work Type</span>'+tog('typegrp',TYPES,kind)+'</div>'+
+    '<div class="fld catwrap"><span class="cap">Product Type</span>'+tog('catgrp',CATS,cat)+'</div>'+
+    '<div class="fld"><span class="cap">Amount</span><input class="lamt" type="number" step="0.01" placeholder="0.00" value="'+(amt!=null?amt:'')+'"></div>'+
     '<button type="button" class="btn-x" title="Remove line" onclick="this.closest(\'.lineRow\').remove()"><i data-lucide="trash-2"></i></button>';
   document.getElementById('lines').appendChild(div);
   if(kind==='consult'){var cw=div.querySelector('.catwrap');if(cw)cw.style.display='none';}
@@ -226,6 +242,7 @@ addLine('Drapery','draperies',1500,'product');
 addLine('Blinds','blinds',1000,'product');
 addLine('Install Drapery','draperies',500,'install');
 addLine('Install Blinds','blinds',500,'install');
+addLine('Design Consultation',null,150,'consult');
 icons();
 run();
 </script>
