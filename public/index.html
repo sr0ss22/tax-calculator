@@ -223,7 +223,7 @@ function selectByValue(sel,name){
   return false;
 }
 // IP-based location (no permission prompt) via ipwho.is — CORS-enabled, no key.
-// Fills State (region) + ZIP (postal), then estimates.
+// Fills State (region) only; ZIP is left for the user to enter.
 async function detectLocation(){
   var sel=document.getElementById('state');var located=false;
   try{
@@ -231,7 +231,6 @@ async function detectLocation(){
     if(res.ok){
       var g=await res.json();
       if(g.success&&g.region&&selectByValue(sel,g.region)) located=true;
-      if(g.postal&&g.country_code==='US') document.getElementById('zip').value=g.postal;
     }
   }catch(e){/* offline or blocked — fall back to manual entry */}
   if(located) run();
