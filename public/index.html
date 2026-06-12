@@ -4,58 +4,110 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Quote Tax Estimate</title>
+<script src="https://unpkg.com/lucide@latest"></script>
 <style>
-  body{font:14px system-ui,sans-serif;max-width:860px;margin:32px auto;padding:0 16px;color:#111}
-  h1{font-size:22px;margin-bottom:4px} h2{font-size:15px;margin-top:24px} .muted{color:#666}
-  fieldset{border:1px solid #e5e7eb;border-radius:8px;margin:14px 0;padding:12px 14px}
-  legend{font-weight:600;font-size:13px;color:#374151;padding:0 6px}
-  label{display:flex;flex-direction:column;font-size:13px;gap:4px}
-  .row{display:flex;gap:12px;flex-wrap:wrap;align-items:end}
-  input,select{padding:7px 9px;border:1px solid #ccc;border-radius:6px;font-size:14px}
+  :root{
+    --bg:#f5f6f8; --card:#ffffff; --border:#e6e8eb; --ink:#16181d; --muted:#6b7280;
+    --orange:#fb5e1e; --orange-d:#e44f12; --header:#15161a;
+    --green-bg:#e7f7ec; --green:#1a7f3c; --gray-bg:#f1f2f4; --gray:#5b6470;
+    --red-bg:#fdecec; --red:#c0392b; --amber-bg:#fff6e6; --amber:#9a6700; --amber-bd:#f0d9a8;
+    --radius:12px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif}
+  .topbar{background:var(--header);color:#fff;padding:14px 22px;display:flex;align-items:center;gap:14px}
+  .logo{width:18px;height:18px;border-radius:4px;background:linear-gradient(135deg,#ff7a18,#e0341d);transform:rotate(45deg)}
+  .brand{font-weight:700;letter-spacing:.3px}
+  .topbar .divider{width:1px;height:20px;background:#3a3c42}
+  .topbar h1{font-size:15px;font-weight:600;margin:0;color:#e9eaec}
+  .tag{margin-left:auto;font-size:12px;color:#b9bcc2;border:1px solid #34363c;border-radius:999px;padding:3px 10px}
+  .wrap{max-width:920px;margin:22px auto;padding:0 18px}
+  .lead{color:var(--muted);margin:0 0 18px;font-size:13.5px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px 18px 16px;margin-bottom:16px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+  .card h2{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;margin:0 0 14px}
+  .card h2 svg{width:17px;height:17px;color:var(--orange)}
+  .hint{color:var(--muted);font-size:12.5px;margin:10px 0 0}
+  .row{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end}
+  label{display:flex;flex-direction:column;gap:5px;font-size:12.5px;font-weight:500;color:#3a3f48}
+  input,select{font:inherit;padding:9px 11px;border:1px solid #d4d7dc;border-radius:9px;background:#fff;color:var(--ink);min-width:120px}
+  input:focus,select:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 3px rgba(251,94,30,.15)}
   input[type=number]{width:130px}
-  button{padding:8px 16px;border:0;border-radius:6px;background:#0b5;color:#fff;font-weight:600;cursor:pointer}
-  button.sec{background:#eef2f7;color:#111}
-  table{width:100%;border-collapse:collapse;margin-top:12px}
-  th,td{padding:6px 8px;border-top:1px solid #eee;text-align:left}
-  td.n,th.n{text-align:right} .totals{margin-top:12px;text-align:right;font-size:15px}
-  .blend{margin-top:12px;background:#fff7e0;border:1px solid #eed79a;border-radius:8px;padding:10px}
-  .warn{margin-top:10px;color:#a60} .pill{font-size:12px;padding:1px 7px;border-radius:6px}
-  .yes{background:#dcfce7;color:#166534}.no{background:#f3f4f6;color:#555}.na{background:#fee2e2;color:#991b1b}
-  .lineRow{display:flex;gap:10px;align-items:end;margin-bottom:8px}
-  .x{background:#fee2e2;color:#991b1b;padding:7px 11px}
+  button{font:inherit;cursor:pointer;border-radius:9px;border:1px solid transparent;display:inline-flex;align-items:center;gap:7px;font-weight:600}
+  .btn-primary{background:var(--orange);color:#fff;padding:10px 18px;font-size:14px}
+  .btn-primary:hover{background:var(--orange-d)}
+  .btn-primary svg{width:16px;height:16px}
+  .btn-sec{background:#fff;border-color:#d4d7dc;color:#2a2e35;padding:8px 13px;font-size:13px}
+  .btn-sec:hover{background:#f7f8fa}
+  .btn-sec svg{width:15px;height:15px}
+  .lineRow{display:flex;gap:12px;align-items:flex-end;padding:10px;border:1px solid #eef0f2;border-radius:10px;margin-bottom:8px;background:#fcfcfd}
+  .btn-x{background:transparent;border:0;color:#b0b4bb;padding:8px;border-radius:8px;align-self:end}
+  .btn-x:hover{background:var(--red-bg);color:var(--red)}
+  .btn-x svg{width:16px;height:16px}
+  .actions{margin-top:6px}
+  .pill{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px}
+  .pill svg{width:13px;height:13px}
+  .pill.yes{background:var(--green-bg);color:var(--green)}
+  .pill.no{background:var(--gray-bg);color:var(--gray)}
+  .pill.na{background:var(--red-bg);color:var(--red)}
+  .ratebadge{margin-left:auto;font-size:12.5px;color:#3a3f48;background:#f1f2f4;border-radius:999px;padding:4px 12px;font-weight:600}
+  table{width:100%;border-collapse:collapse;margin-top:6px}
+  th,td{padding:9px 10px;text-align:left;font-size:13px}
+  thead th{background:#f7f8fa;color:#6b7280;font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:.4px}
+  tbody tr{border-top:1px solid #eef0f2}
+  td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+  .totals{margin-top:14px;display:flex;flex-direction:column;align-items:flex-end;gap:3px;font-size:13.5px}
+  .totals .grand{font-size:17px;font-weight:700;margin-top:4px}
+  .totals .grand b{color:var(--orange-d)}
+  .blend,.notes{margin-top:14px;border-radius:10px;padding:11px 13px;font-size:13px;display:flex;gap:9px;align-items:flex-start}
+  .blend{background:var(--amber-bg);border:1px solid var(--amber-bd);color:#7a5200}
+  .notes{background:#f3f6fb;border:1px solid #dde6f2;color:#3a4a63}
+  .blend svg,.notes svg{width:16px;height:16px;flex:none;margin-top:1px}
+  .notes ul{margin:4px 0 0;padding-left:18px}
+  #out:empty{display:none}
+  .resulthead{display:flex;align-items:center;gap:8px;margin-bottom:2px}
+  .resulthead svg{width:17px;height:17px;color:var(--orange)}
+  .resulthead .loc{font-weight:700;font-size:15px}
 </style>
 </head>
 <body>
-<h1>Quote Tax Estimate</h1>
-<p class="muted">Estimate sales tax for a quote. Enter lines, a location, and optional fees. <b>State</b> takes a US state code or name, or a Canadian province name or code (for example Ontario or BC) to use the static Canada rates. This is an estimate; SAP remains the system of record for actual tax.</p>
+<header class="topbar">
+  <span class="logo"></span><span class="brand">brite</span>
+  <span class="divider"></span>
+  <h1>Quote Tax Estimate</h1>
+  <span class="tag">Estimate only</span>
+</header>
 
-<fieldset>
-  <legend>Location and channel</legend>
+<div class="wrap">
+<p class="lead">Estimate sales tax for a quote. Pick a location, add lines, and add optional fees. SAP remains the system of record for actual tax.</p>
+
+<div class="card">
+  <h2><i data-lucide="map-pin"></i>Location and channel</h2>
   <div class="row">
     <label>State or province<select id="state"></select></label>
     <label>ZIP (US, optional)<input id="zip" value="78664" placeholder="78664"></label>
     <label>Channel<select id="channel"><option value="THD">The Home Depot (THD)</option><option value="partners">Decorview / DirectBuy / Macy's / JCP</option></select></label>
     <label>Rate override<input id="rate" type="number" step="0.0001" placeholder="e.g. 0.0825"></label>
   </div>
-  <p class="muted" style="margin:8px 0 0">US rates use the built-in state average combined rate by default (no API). Enter a rate override for the exact local rate, or configure a TaxJar token for live ZIP lookup. Canada needs no rate (static chart).</p>
-</fieldset>
+  <p class="hint">US rates use the built-in state average combined rate by default (no API). Enter a rate override for the exact local rate, or configure a TaxJar token for live ZIP lookup. Canada needs no rate (static chart).</p>
+</div>
 
-<fieldset>
-  <legend>Lines</legend>
-  <p class="muted" style="margin:0 0 10px">Each line is a Product or an Install. Installation labor is taxed by per-category rules that differ by state, so add Install Drapery, Install Blinds, and Install Shutters as their own lines.</p>
+<div class="card">
+  <h2><i data-lucide="layers"></i>Lines</h2>
+  <p class="hint" style="margin:0 0 12px">Each line is a Product or an Install. Installation labor is taxed by per-category rules that differ by state, so add Install Drapery, Install Blinds, and Install Shutters as their own lines.</p>
   <div id="lines"></div>
-  <button type="button" class="sec" onclick="addLine()">+ Add line</button>
-</fieldset>
+  <div class="actions"><button type="button" class="btn-sec" onclick="addLine()"><i data-lucide="plus"></i>Add line</button></div>
+</div>
 
-<fieldset>
-  <legend>Consultation fee (optional)</legend>
+<div class="card">
+  <h2><i data-lucide="badge-percent"></i>Consultation fee (optional)</h2>
   <div class="row">
     <label>Measure / design consultation fee<input id="measure" type="number" step="0.01" placeholder="0"></label>
   </div>
-</fieldset>
+</div>
 
-<button onclick="run()">Estimate tax</button>
+<button class="btn-primary" onclick="run()"><i data-lucide="calculator"></i>Estimate tax</button>
 <div id="out"></div>
+</div>
 
 <script>
 var CATS=['blinds','shutters','draperies'];
@@ -63,6 +115,7 @@ var CATS=['blinds','shutters','draperies'];
 // list avoids any spelling mismatch.
 var US_STATES=['Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware','District of Columbia','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia','Wisconsin','Wyoming'];
 var CA_PROVINCES=['Alberta','British Columbia','Manitoba','New Brunswick','Newfoundland & Labrador','Northwest Territories','Nova Scotia','Nunavut','Ontario','Prince Edward Island','Quebec','Saskatchewan','Yukon Territory'];
+function icons(){ if(window.lucide) lucide.createIcons(); }
 function populateStates(){
   var sel=document.getElementById('state');
   function group(label,arr){
@@ -79,12 +132,13 @@ function addLine(name,cat,amt,kind){
   var div=document.createElement('div');div.className='lineRow';
   var opts=CATS.map(function(c){return '<option'+(c===cat?' selected':'')+'>'+c+'</option>'}).join('');
   var kinds=[['product','Product'],['install','Install']].map(function(k){return '<option value="'+k[0]+'"'+(k[0]===(kind||'product')?' selected':'')+'>'+k[1]+'</option>'}).join('');
-  div.innerHTML='<label>Name<input class="lname" value="'+(name||'')+'"></label>'+
+  div.innerHTML='<label style="flex:1 1 160px">Name<input class="lname" value="'+(name||'')+'"></label>'+
     '<label>Type<select class="lkind">'+kinds+'</select></label>'+
     '<label>Category<select class="lcat">'+opts+'</select></label>'+
     '<label>Amount<input class="lamt" type="number" step="0.01" value="'+(amt!=null?amt:'')+'"></label>'+
-    '<button type="button" class="x" onclick="this.parentNode.remove()">x</button>';
+    '<button type="button" class="btn-x" title="Remove line" onclick="this.parentNode.remove()"><i data-lucide="trash-2"></i></button>';
   wrap.appendChild(div);
+  icons();
 }
 function fmt(v){return (v||0).toLocaleString('en-US',{style:'currency',currency:'USD'})}
 function pct(r){return ((r||0)*100).toFixed(3)+'%'}
@@ -110,31 +164,36 @@ function collect(){
 }
 function show(d){
   var out=document.getElementById('out');
-  if(d.error){out.innerHTML='<p class="warn">'+d.error+'</p>';return}
+  if(d.error){out.innerHTML='<div class="card"><div class="notes"><i data-lucide="alert-triangle"></i><span>'+d.error+'</span></div></div>';icons();return}
   var rows=(d.lines||[]).map(function(l){
-    var pill=!l.found?'<span class="pill na">N/A</span>':(l.taxable?'<span class="pill yes">Taxable</span>':'<span class="pill no">no</span>');
-    return '<tr><td>'+(l.name||'-')+(l.warning?' <span class="muted">('+l.warning+')</span>':'')+'</td><td>'+(l.category||'-')+'</td><td class="n">'+fmt(l.amount)+'</td><td>'+pill+'</td><td class="n">'+(l.taxable?pct(l.appliedRate):'-')+'</td><td class="n">'+fmt(l.tax)+'</td></tr>';
+    var pill=!l.found?'<span class="pill na"><i data-lucide="alert-triangle"></i>N/A</span>':(l.taxable?'<span class="pill yes"><i data-lucide="check"></i>Taxable</span>':'<span class="pill no"><i data-lucide="minus"></i>Exempt</span>');
+    return '<tr><td>'+(l.name||'-')+(l.warning?' <span style="color:#9a6700">('+l.warning+')</span>':'')+'</td><td>'+(l.category||'-')+'</td><td class="n">'+fmt(l.amount)+'</td><td>'+pill+'</td><td class="n">'+(l.taxable?pct(l.appliedRate):'-')+'</td><td class="n">'+fmt(l.tax)+'</td></tr>';
   }).join('');
-  var blend=d.blended?'<div class="blend">THD blended-tax case: enter one weighted rate of <b>'+(d.blendedRate*100).toFixed(2)+'%</b> on the TAX and TAX-Install lines (total tax / total retail).</div>':'';
-  var warns=(d.warnings&&d.warnings.length)?'<div class="warn"><b>Notes:</b><ul>'+d.warnings.map(function(w){return '<li>'+w+'</li>'}).join('')+'</ul></div>':'';
-  out.innerHTML='<h2>'+(d.country||'')+' - '+(d.state||'-')+(d.zip?(' '+d.zip):'')+'</h2>'+
-    '<p class="muted">Applied rate: '+pct(d.combinedRate)+(d.rateOverridden?' (manual override)':'')+'</p>'+
+  var rateTag=d.rateOverridden?' (manual override)':(d.rateEstimated?' (estimate)':'');
+  var blend=d.blended?'<div class="blend"><i data-lucide="scale"></i><span>THD blended-tax case: enter one weighted rate of <b>'+(d.blendedRate*100).toFixed(2)+'%</b> on the TAX and TAX-Install lines (total tax / total retail).</span></div>':'';
+  var notes=(d.warnings&&d.warnings.length)?'<div class="notes"><i data-lucide="info"></i><div><b>Notes</b><ul>'+d.warnings.map(function(w){return '<li>'+w+'</li>'}).join('')+'</ul></div></div>':'';
+  out.innerHTML='<div class="card">'+
+    '<div class="resulthead"><i data-lucide="receipt-text"></i><span class="loc">'+(d.country||'')+' &middot; '+(d.state||'-')+(d.zip?(' '+d.zip):'')+'</span>'+
+    '<span class="ratebadge">Applied rate '+pct(d.combinedRate)+rateTag+'</span></div>'+
     '<table><thead><tr><th>Line</th><th>Category</th><th class="n">Amount</th><th>Taxability</th><th class="n">Rate</th><th class="n">Tax</th></tr></thead><tbody>'+rows+'</tbody></table>'+
-    '<div class="totals">Taxable base: '+fmt(d.taxableBase)+'<br>Total tax: '+fmt(d.totalTax)+'<br><b>Order total: '+fmt(d.orderTotal)+'</b></div>'+blend+warns;
+    '<div class="totals"><span>Taxable base: '+fmt(d.taxableBase)+'</span><span>Total tax: '+fmt(d.totalTax)+'</span><span class="grand">Order total: <b>'+fmt(d.orderTotal)+'</b></span></div>'+
+    blend+notes+'</div>';
+  icons();
 }
 async function run(){
-  var out=document.getElementById('out');out.textContent='Estimating...';
+  var out=document.getElementById('out');out.innerHTML='<p class="hint">Estimating...</p>';
   try{
     var res=await fetch('/api/estimate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(collect())});
     show(await res.json());
-  }catch(err){out.innerHTML='<p class="warn">'+err+'</p>'}
+  }catch(err){out.innerHTML='<div class="card"><div class="notes"><i data-lucide="alert-triangle"></i><span>'+err+'</span></div></div>';icons();}
 }
-// Populate the state/province pick list, then seed an example quote.
+// Build the page, then estimate the seeded example.
 populateStates();
 addLine('Drapery','draperies',1500,'product');
 addLine('Blinds','blinds',1000,'product');
 addLine('Install Drapery','draperies',500,'install');
 addLine('Install Blinds','blinds',500,'install');
+icons();
 run();
 </script>
 </body>
