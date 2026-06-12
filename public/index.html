@@ -173,7 +173,9 @@
     /* Stack each line's fields vertically instead of wrapping, tightly. */
     .lineRow{flex-direction:column;align-items:stretch;gap:10px;padding:12px}
     .lineGroup{margin-bottom:8px}
-    .lineRow .fld{width:100%}
+    /* In the column layout, reset flex-grow so fields don't stretch vertically
+       (the consult Work Type field was creating a tall dead gap). */
+    .lineRow .fld{width:100%;flex:0 0 auto}
     .lineRow .fld.amt{margin-left:0}
     .lamt,.lname,.fld.name{width:100%}
     .productRow .catgrp{width:100%}
@@ -438,10 +440,19 @@ function show(d){
   document.getElementById('sumLoc').textContent=(d.country||'')+' · '+(d.state||'-')+(d.zip?(' '+d.zip):'');
   // Headline figure for the bottom bar: blended rate when present, else applied rate.
   setMobileRate(d.blended?((d.blendedRate*100).toFixed(2)+'%'):pct(d.combinedRate),d.blended?'Blended rate':'Applied rate');
-  // Applied tax rate as a hero — the jurisdiction rate the user keys into the order system.
-  var rateHero='<div class="blendhero ratehero"><div class="bh-label"><i data-lucide="percent"></i>Applied tax rate</div>'+
-    '<div class="bh-rate">'+pct(d.combinedRate)+'</div>'+
-    '<div class="bh-sub">Enter this rate into the order system'+(d.rateOverridden?' (manual override)':'')+'</div></div>';
+  // Headline rate to key into the order system. When the order blends taxable and
+  // exempt products, the blended rate IS the rate to enter, so it replaces the
+  // applied rate (showing both is confusing).
+  var headHero;
+  if(d.blended){
+    headHero='<div class="blendhero"><div class="bh-label"><i data-lucide="scale"></i>Blended tax rate</div>'+
+      '<div class="bh-rate">'+(d.blendedRate*100).toFixed(2)+'%</div>'+
+      '<div class="bh-sub">Enter this rate on the TAX and TAX-Install lines (total tax &divide; total retail)</div></div>';
+  }else{
+    headHero='<div class="blendhero ratehero"><div class="bh-label"><i data-lucide="percent"></i>Applied tax rate</div>'+
+      '<div class="bh-rate">'+pct(d.combinedRate)+'</div>'+
+      '<div class="bh-sub">Enter this rate into the order system'+(d.rateOverridden?' (manual override)':'')+'</div></div>';
+  }
   var lines=(d.lines||[]).map(function(l){
     return '<div class="srow"><div><div class="snm">'+(l.name||'-')+'</div><div class="ssub">'+(l.category||'-')+' &middot; '+fmt(l.amount)+(l.taxable?(' @ '+pct(l.appliedRate)):'')+'</div></div>'+
       '<div class="sright">'+pillFor(l)+'<div class="stax">'+fmt(l.tax)+'</div></div></div>';
@@ -453,17 +464,13 @@ function show(d){
   if(seen.product) breakout+='<div class="tr sub"><span>Product tax</span><span>'+fmt(byKind.product)+'</span></div>';
   if(seen.install) breakout+='<div class="tr sub"><span>Installation tax</span><span>'+fmt(byKind.install)+'</span></div>';
   if(seen.consult) breakout+='<div class="tr sub"><span>Consultation tax</span><span>'+fmt(byKind.consult)+'</span></div>';
-  // Blended rate is the actionable figure for THD blended orders — give it top billing.
-  var blend=d.blended?'<div class="blendhero"><div class="bh-label"><i data-lucide="scale"></i>Blended tax rate</div>'+
-    '<div class="bh-rate">'+(d.blendedRate*100).toFixed(2)+'%</div>'+
-    '<div class="bh-sub">Enter on the TAX and TAX-Install lines (total tax ÷ total retail)</div></div>':'';
   var notes=(d.warnings&&d.warnings.length)?'<div class="notes"><i data-lucide="info"></i><div><b>Notes</b><ul>'+d.warnings.map(function(w){return '<li>'+w+'</li>'}).join('')+'</ul></div></div>':'';
-  lineOut.innerHTML=rateHero+lines+
+  lineOut.innerHTML=headHero+lines+
     '<div class="totals"><div class="tr"><span>Taxable base</span><span>'+fmt(d.taxableBase)+'</span></div>'+
     breakout+
     '<div class="tr tot"><span>Total tax</span><span>'+fmt(d.totalTax)+'</span></div>'+
     '<div class="tr grand"><span>Order total</span><b>'+fmt(d.orderTotal)+'</b></div></div>'+
-    blend+notes;
+    notes;
   icons();
 }
 // Debounced auto-recalc: every input/toggle change schedules a run; typing
