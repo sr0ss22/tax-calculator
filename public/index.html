@@ -32,7 +32,7 @@
 <fieldset>
   <legend>Location and channel</legend>
   <div class="row">
-    <label>State or province<input id="state" value="TX" placeholder="TX or Ontario"></label>
+    <label>State or province<select id="state"></select></label>
     <label>ZIP (US, optional)<input id="zip" value="78664" placeholder="78664"></label>
     <label>Channel<select id="channel"><option value="THD">The Home Depot (THD)</option><option value="partners">Decorview / DirectBuy / Macy's / JCP</option></select></label>
     <label>Rate override<input id="rate" type="number" step="0.0001" placeholder="e.g. 0.0825"></label>
@@ -59,6 +59,21 @@
 
 <script>
 var CATS=['blinds','shutters','draperies'];
+// Values match the engine's matrix and Canada chart names exactly, so the pick
+// list avoids any spelling mismatch.
+var US_STATES=['Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware','District of Columbia','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia','Wisconsin','Wyoming'];
+var CA_PROVINCES=['Alberta','British Columbia','Manitoba','New Brunswick','Newfoundland & Labrador','Northwest Territories','Nova Scotia','Nunavut','Ontario','Prince Edward Island','Quebec','Saskatchewan','Yukon Territory'];
+function populateStates(){
+  var sel=document.getElementById('state');
+  function group(label,arr){
+    var og=document.createElement('optgroup');og.label=label;
+    arr.forEach(function(s){var o=document.createElement('option');o.value=s;o.textContent=s;og.appendChild(o);});
+    sel.appendChild(og);
+  }
+  group('United States',US_STATES);
+  group('Canada',CA_PROVINCES);
+  sel.value='Texas';
+}
 function addLine(name,cat,amt,kind){
   var wrap=document.getElementById('lines');
   var div=document.createElement('div');div.className='lineRow';
@@ -114,7 +129,8 @@ async function run(){
     show(await res.json());
   }catch(err){out.innerHTML='<p class="warn">'+err+'</p>'}
 }
-// Seed an example quote showing product + per-category install lines.
+// Populate the state/province pick list, then seed an example quote.
+populateStates();
 addLine('Drapery','draperies',1500,'product');
 addLine('Blinds','blinds',1000,'product');
 addLine('Install Drapery','draperies',500,'install');
