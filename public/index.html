@@ -42,8 +42,8 @@
   .seg .tog:hover:not(.active){background:#f7f8fa}
   .seg .tog.active{background:var(--orange);color:#fff}
   button{font:inherit;cursor:pointer}
-  .btn-primary{background:var(--orange);color:#fff;border:0;border-radius:9px;padding:11px 20px;font-size:14px;font-weight:600;display:inline-flex;align-items:center;gap:8px;width:100%;justify-content:center}
-  .btn-primary:hover{background:var(--orange-d)}
+  .btn-primary{background:#15161a;color:#fff;border:0;border-radius:9px;padding:12px 20px;font-size:14px;font-weight:600;display:inline-flex;align-items:center;gap:8px;width:100%;justify-content:center;margin-top:2px}
+  .btn-primary:hover{background:#000}
   .btn-primary svg{width:16px;height:16px}
   .btn-sec{background:#fff;border:1px solid #d4d7dc;color:#2a2e35;border-radius:9px;padding:8px 13px;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:7px}
   .btn-sec:hover{background:#f7f8fa}
@@ -120,12 +120,11 @@
       <div id="lines"></div>
       <button type="button" class="btn-sec" onclick="addLine()"><i data-lucide="plus"></i>Add line</button>
     </div>
-
-    <button class="btn-primary" onclick="run()"><i data-lucide="calculator"></i>Estimate tax</button>
   </div>
 
   <div class="right">
     <div id="out"></div>
+    <button class="btn-primary" onclick="run()"><i data-lucide="calculator"></i>Estimate tax</button>
   </div>
 </div>
 </div>
@@ -133,7 +132,7 @@
 <script>
 var US_STATES=['Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware','District of Columbia','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia','Wisconsin','Wyoming'];
 var CA_PROVINCES=['Alberta','British Columbia','Manitoba','New Brunswick','Newfoundland & Labrador','Northwest Territories','Nova Scotia','Nunavut','Ontario','Prince Edward Island','Quebec','Saskatchewan','Yukon Territory'];
-var TYPES=[['product','package','Product'],['install','wrench','Install'],['consult','swatch-book','Design consultation']];
+var TYPES=[['product','package','Product','Product'],['install','wrench','Install','Install'],['consult','swatch-book','Design consultation','Consult']];
 var CATS=[['blinds','rows-3','Blinds'],['shutters','columns-3','Shutters'],['draperies','curtain','Draperies']];
 function icons(){ if(window.lucide) lucide.createIcons(); }
 // Lucide has no curtain icon, so draperies uses a small inline curtain SVG.
@@ -150,9 +149,10 @@ function populateStates(){
   }
   group('United States',US_STATES);group('Canada',CA_PROVINCES);sel.value='Texas';
 }
-function tog(groupCls,items,sel){
+function tog(groupCls,items,sel,withText){
   return '<div class="seg '+groupCls+'">'+items.map(function(it){
-    return '<button type="button" class="tog'+(it[0]===sel?' active':'')+'" data-val="'+it[0]+'" title="'+it[2]+'" onclick="pickTog(this)">'+iconHTML(it[1])+'</button>';
+    var txt=withText?('<span>'+(it[3]||it[2])+'</span>'):'';
+    return '<button type="button" class="tog'+(it[0]===sel?' active':'')+'" data-val="'+it[0]+'" title="'+it[2]+'" onclick="pickTog(this)">'+iconHTML(it[1])+txt+'</button>';
   }).join('')+'</div>';
 }
 function pickTog(btn){
@@ -160,24 +160,23 @@ function pickTog(btn){
   grp.querySelectorAll('.tog').forEach(function(b){b.classList.remove('active')});
   btn.classList.add('active');
   if(grp.classList.contains('typegrp')){
-    var row=btn.closest('.lineRow');
-    var cw=row.querySelector('.catwrap');
-    var nm=row.querySelector('.lname');
-    if(btn.dataset.val==='consult'){
-      if(cw) cw.style.display='none';
-      if(nm) nm.value='Design Consultation';
-    }else{
-      if(cw) cw.style.display='';
-      if(nm && nm.value==='Design Consultation') nm.value='';
-    }
+    var row=btn.closest('.lineRow');var cw=row.querySelector('.catwrap');
+    if(cw) cw.style.display=(btn.dataset.val==='consult')?'none':'';
   }
 }
-function addLine(name,cat,amt,kind){
+// lineName derives a display name from the work type and product type, since there
+// is no free-text name field.
+function lineName(kind,cat){
+  if(kind==='consult') return 'Design Consultation';
+  var L={blinds:'Blinds',shutters:'Shutters',draperies:'Drapery'};
+  var base=L[cat]||cat;
+  return kind==='install'?('Install '+base):base;
+}
+function addLine(cat,amt,kind){
   kind=kind||'product';cat=cat||'blinds';
   var div=document.createElement('div');div.className='lineRow';
-  div.innerHTML='<div class="fld name"><span class="cap">Name</span><input class="lname" placeholder="Line name" value="'+(name||'')+'"></div>'+
-    '<div class="fld"><span class="cap">Work Type</span>'+tog('typegrp',TYPES,kind)+'</div>'+
-    '<div class="fld catwrap"><span class="cap">Product Type</span>'+tog('catgrp',CATS,cat)+'</div>'+
+  div.innerHTML='<div class="fld"><span class="cap">Work Type</span>'+tog('typegrp',TYPES,kind,true)+'</div>'+
+    '<div class="fld catwrap"><span class="cap">Product Type</span>'+tog('catgrp',CATS,cat,false)+'</div>'+
     '<div class="fld"><span class="cap">Amount</span><input class="lamt" type="number" step="0.01" placeholder="0.00" value="'+(amt!=null?amt:'')+'"></div>'+
     '<button type="button" class="btn-x" title="Remove line" onclick="this.closest(\'.lineRow\').remove()"><i data-lucide="trash-2"></i></button>';
   document.getElementById('lines').appendChild(div);
@@ -189,12 +188,11 @@ function pct(r){return ((r||0)*100).toFixed(3)+'%'}
 function collect(){
   var lines=[];
   document.querySelectorAll('#lines .lineRow').forEach(function(row){
-    var name=row.querySelector('.lname').value.trim();
     var kind=row.querySelector('.typegrp .tog.active').dataset.val;
     var catBtn=row.querySelector('.catgrp .tog.active');
     var cat=catBtn?catBtn.dataset.val:'';
     var amt=parseFloat(row.querySelector('.lamt').value);
-    if(name||!isNaN(amt)) lines.push({name:name,category:cat,kind:kind,amount:isNaN(amt)?0:amt});
+    if(!isNaN(amt)) lines.push({name:lineName(kind,cat),category:cat,kind:kind,amount:amt});
   });
   var ro=parseFloat(document.getElementById('rate').value);
   return {
@@ -238,11 +236,11 @@ async function run(){
 }
 // Build the page, then estimate the seeded example.
 populateStates();
-addLine('Drapery','draperies',1500,'product');
-addLine('Blinds','blinds',1000,'product');
-addLine('Install Drapery','draperies',500,'install');
-addLine('Install Blinds','blinds',500,'install');
-addLine('Design Consultation',null,150,'consult');
+addLine('draperies',1500,'product');
+addLine('blinds',1000,'product');
+addLine('draperies',500,'install');
+addLine('blinds',500,'install');
+addLine(null,150,'consult');
 icons();
 run();
 </script>
