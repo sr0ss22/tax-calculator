@@ -147,7 +147,7 @@
       <h2><i data-lucide="map-pin"></i>Location and channel</h2>
       <div class="row">
         <label>State or province<select id="state" onchange="run()"></select></label>
-        <label>ZIP (US)<input id="zip" class="zipin" maxlength="10" placeholder="ZIP" onchange="run()"></label>
+        <label>ZIP (US)<input id="zip" class="zipin" maxlength="10" placeholder="ZIP"></label>
         <div class="fldcol"><span class="fldlbl">Channel</span>
           <div class="seg" id="channel">
             <button type="button" class="tog active" data-val="THD" onclick="pickTog(this)"><i data-lucide="house"></i>THD</button>
@@ -176,7 +176,7 @@
       <div class="resulthead">
         <i data-lucide="receipt-text"></i>
         <span class="loc" id="sumLoc">Estimate</span>
-        <label class="rateOv">Rate override %<input id="rate" type="number" step="0.001" placeholder="e.g. 7.5" onchange="run()"></label>
+        <label class="rateOv">Rate override %<input id="rate" type="number" step="0.001" placeholder="e.g. 7.5"></label>
       </div>
       <div id="lineOut"><p class="placeholder">Add lines, then estimate.</p></div>
     </div>
@@ -259,12 +259,14 @@ function pickTog(btn){
     var group=btn.closest('.lineGroup');
     if(group) updateInstallSub(group);
   }
+  scheduleRun();
 }
 function pickInstall(btn){
   var grp=btn.parentNode;
   grp.querySelectorAll('.tog').forEach(function(b){b.classList.remove('active')});
   btn.classList.add('active');
   syncInstalls();
+  scheduleRun();
 }
 function isRLN(){var a=document.querySelector('#install .tog.active');return !!a&&a.dataset.val==='RLN';}
 // lineName derives a display name from the work type and product type, since there
@@ -275,7 +277,7 @@ function lineName(kind,cat){
   var base=L[cat]||cat;
   return kind==='install'?('Install '+base):base;
 }
-var rmBtn='<button type="button" class="btn-x" title="Remove line" onclick="this.closest(\'.lineGroup\').remove()"><i data-lucide="trash-2"></i></button>';
+var rmBtn='<button type="button" class="btn-x" title="Remove line" onclick="this.closest(\'.lineGroup\').remove();scheduleRun()"><i data-lucide="trash-2"></i></button>';
 function catMeta(cat){for(var i=0;i<CATS.length;i++){if(CATS[i][0]===cat)return CATS[i];}return CATS[0];}
 function activeCat(group){var b=group.querySelector('.productRow .catgrp .tog.active');return b?b.dataset.val:'blinds';}
 // A product line is one .lineGroup: the product row plus an optional nested install row.
@@ -415,12 +417,26 @@ function show(d){
     blend+notes;
   icons();
 }
+// Debounced auto-recalc: every input/toggle change schedules a run; typing
+// coalesces so it's not a request per keystroke.
+var _runTimer, _runSeq=0;
+function scheduleRun(){clearTimeout(_runTimer);_runTimer=setTimeout(run,300);}
 async function run(){
-  document.getElementById('lineOut').innerHTML='<p class="placeholder">Estimating...</p>';
+  clearTimeout(_runTimer);
+  if(!document.getElementById('state').value){
+    document.getElementById('lineOut').innerHTML='<p class="placeholder">Pick a state or province to estimate.</p>';
+    return;
+  }
+  var seq=++_runSeq;
   try{
     var res=await fetch('/api/estimate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(collect())});
-    show(await res.json());
-  }catch(err){document.getElementById('lineOut').innerHTML='<div class="notes"><i data-lucide="alert-triangle"></i><span>'+err+'</span></div>';icons();}
+    var data=await res.json();
+    if(seq!==_runSeq) return; // a newer change superseded this response
+    show(data);
+  }catch(err){
+    if(seq!==_runSeq) return;
+    document.getElementById('lineOut').innerHTML='<div class="notes"><i data-lucide="alert-triangle"></i><span>'+err+'</span></div>';icons();
+  }
 }
 // Build the page, then estimate the seeded example.
 populateStates();
@@ -428,6 +444,11 @@ addProductLine('draperies',1500,500);
 addProductLine('blinds',1000,500);
 addConsultLine(150);
 icons();
+// Auto-recalculate as the user types in any amount, the ZIP, or the rate override.
+document.addEventListener('input',function(e){
+  var t=e.target;
+  if(t&&t.matches&&(t.matches('.lamt')||t.id==='rate'||t.id==='zip')) scheduleRun();
+});
 detectLocation();
 </script>
 </body>
