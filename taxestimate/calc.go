@@ -1,5 +1,12 @@
 package taxestimate
 
+import "math"
+
+// round2 rounds a dollar amount to whole cents. Per-line tax is rounded here so
+// the displayed line taxes sum exactly to the total (matching ERP per-line
+// rounding); otherwise sum-of-rounded-parts can differ from the raw total by a cent.
+func round2(x float64) float64 { return math.Round(x*100) / 100 }
+
 // blendStates is the set of states where, for THD, blinds and shutters are taxed
 // differently, so a job mixing both needs one weighted blended rate per the
 // Blended Tax SOP. Ported verbatim from the RLN prototype BLEND_STATES.
@@ -146,7 +153,7 @@ func (c *Calculator) Compute(channel Channel, state string, rate float64, lines 
 		lineResult := LineTaxResult{Input: line, Found: found, Taxable: found && taxable}
 		if lineResult.Taxable {
 			lineResult.AppliedRate = rate
-			lineResult.Tax = line.Amount * rate
+			lineResult.Tax = round2(line.Amount * rate)
 			result.TaxableBase += line.Amount
 		}
 		if c.matrix.LaborDivergesFromProduct(channel, state, line.Category, line.OrderType) {
@@ -168,7 +175,8 @@ func (c *Calculator) Compute(channel Channel, state string, rate float64, lines 
 		result.Lines = append(result.Lines, lineResult)
 	}
 
-	result.OrderTotal = result.Retail + result.TotalTax
+	result.TotalTax = round2(result.TotalTax)
+	result.OrderTotal = round2(result.Retail + result.TotalTax)
 
 	if channel == ChannelTHD && hasBlinds && hasShutters && blendStates[state] {
 		result.Blended = true
