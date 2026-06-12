@@ -222,14 +222,15 @@ function selectByValue(sel,name){
   for(var i=0;i<sel.options.length;i++){if(sel.options[i].value&&normName(sel.options[i].value)===t){sel.value=sel.options[i].value;return true;}}
   return false;
 }
-// IP-based location (no permission prompt). Fills State + ZIP, then estimates.
+// IP-based location (no permission prompt) via ipwho.is — CORS-enabled, no key.
+// Fills State (region) + ZIP (postal), then estimates.
 async function detectLocation(){
   var sel=document.getElementById('state');var located=false;
   try{
-    var res=await fetch('https://ipapi.co/json/');
+    var res=await fetch('https://ipwho.is/');
     if(res.ok){
       var g=await res.json();
-      if(g.region&&selectByValue(sel,g.region)) located=true;
+      if(g.success&&g.region&&selectByValue(sel,g.region)) located=true;
       if(g.postal&&g.country_code==='US') document.getElementById('zip').value=g.postal;
     }
   }catch(e){/* offline or blocked — fall back to manual entry */}
