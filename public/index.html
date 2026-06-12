@@ -121,13 +121,11 @@
   .typecard:hover{border-color:var(--orange);background:#fff7f3}
   .typecard:disabled{opacity:.4;cursor:not-allowed}
   .typecard:disabled:hover{border-color:#d4d7dc;background:#fff}
-  /* product + nested install grouping */
+  /* product line groups */
   .lineGroup{margin-bottom:10px}
-  .installSub{position:relative;display:flex;gap:14px;align-items:flex-end;margin:7px 0 0 30px;padding:10px 12px;border:1px dashed #d8dce1;border-radius:10px;background:#f6f7f9}
-  .installSub::before{content:"";position:absolute;left:-16px;top:-7px;height:24px;width:14px;border-left:2px solid #d8dce1;border-bottom:2px solid #d8dce1;border-bottom-left-radius:8px}
-  /* read-only chip used by the nested install row (matches the product, not editable) */
-  .roChip{display:inline-flex;align-items:center;gap:7px;padding:8px 0;color:#5b6470;font-weight:600;white-space:nowrap}
-  .roChip svg{width:16px;height:16px;color:#8a929c}
+  /* Product Amount + Install Amount sit together at the right (stack on mobile). */
+  .amts{display:flex;gap:14px;margin-left:auto;align-items:flex-end}
+  #lines.selfInstall .instAmtFld{display:none}
   /* sticky mobile action bar + bottom-sheet controls (hidden on desktop) */
   .mobilebar,.sheet-backdrop,.sheet-x{display:none}
   /* ===== Mobile (phones / narrow) ===== */
@@ -182,9 +180,9 @@
     .productRow .catgrp .tog{flex:1;justify-content:center}
     /* Trash moves out of the corner into its own right-aligned control. */
     .lineRow .btn-x{position:static;margin:2px 0 0 auto;color:var(--red)}
-    /* Drop the indent + connector elbow; keep a light accent for grouping. */
-    .installSub{flex-direction:column;align-items:stretch;margin:8px 0 0;padding:12px;border-left:3px solid #e2e5e9}
-    .installSub::before{display:none}
+    /* Product/Install amounts stack full-width. */
+    .amts{flex-direction:column;gap:10px;margin-left:0;width:100%}
+    .amts .fld,.amts .lamt{width:100%}
     /* Full-width Add line for easy tapping. */
     #lines + .btn-sec{width:100%;justify-content:center}
   }
@@ -225,7 +223,7 @@
 
     <div class="card">
       <h2><i data-lucide="layers"></i>Lines</h2>
-      <p class="hint" style="margin:0 0 12px">Add a product line per window-covering category. With <b>Install: RLN</b>, a matching install line is added automatically under each product&mdash;just enter its labor amount. With <b>Install: Self</b> no install lines are added. A Design Consultation can be added once as its own line.</p>
+      <p class="hint" style="margin:0 0 12px">Add a product line per window-covering category and enter its <b>Product Amount</b>. With <b>Install: RLN</b> each line also shows an <b>Install Amount</b> for its labor; with <b>Install: Self</b> that field is hidden and no install is taxed. A Design Consultation can be added once as its own line.</p>
       <div id="lines"></div>
       <button type="button" class="btn-sec" onclick="openTypeModal()"><i data-lucide="plus"></i>Add line</button>
     </div>
@@ -324,11 +322,6 @@ function pickTog(btn){
   var grp=btn.parentNode;
   grp.querySelectorAll('.tog').forEach(function(b){b.classList.remove('active')});
   btn.classList.add('active');
-  // changing a product's category keeps its nested install row in sync
-  if(grp.classList.contains('catgrp')){
-    var group=btn.closest('.lineGroup');
-    if(group) updateInstallSub(group);
-  }
   scheduleRun();
 }
 function pickInstall(btn){
@@ -348,20 +341,21 @@ function lineName(kind,cat){
   return kind==='install'?('Install '+base):base;
 }
 var rmBtn='<button type="button" class="btn-x" title="Remove line" onclick="this.closest(\'.lineGroup\').remove();scheduleRun()"><i data-lucide="trash-2"></i></button>';
-function catMeta(cat){for(var i=0;i<CATS.length;i++){if(CATS[i][0]===cat)return CATS[i];}return CATS[0];}
 function activeCat(group){var b=group.querySelector('.productRow .catgrp .tog.active');return b?b.dataset.val:'blinds';}
-// A product line is one .lineGroup: the product row plus an optional nested install row.
-function addProductLine(cat,amt,instAmt){
+// A product line carries its own Product Amount and (when Install: RLN) Install
+// Amount on the same row — no separate nested install line.
+function addProductLine(cat,prodAmt,instAmt){
   cat=cat||'blinds';
   var g=document.createElement('div');g.className='lineGroup';g.dataset.kind='product';
   g.innerHTML='<div class="lineRow productRow">'+
       '<div class="fld"><span class="cap">Product Type</span>'+tog('catgrp',CATS,cat,true)+'</div>'+
-      '<div class="fld amt"><span class="cap">Amount</span><input class="lamt prodAmt" type="number" step="0.01" placeholder="0.00" value="'+(amt!=null?amt:'')+'"></div>'+
+      '<div class="amts">'+
+        '<div class="fld"><span class="cap">Product Amount</span><input class="lamt prodAmt" type="number" step="0.01" placeholder="0.00" value="'+(prodAmt!=null?prodAmt:'')+'"></div>'+
+        '<div class="fld instAmtFld"><span class="cap">Install Amount</span><input class="lamt instAmt" type="number" step="0.01" placeholder="0.00" value="'+(instAmt!=null?instAmt:'')+'"></div>'+
+      '</div>'+
       rmBtn+
-    '</div>'+
-    '<div class="installWrap"></div>';
+    '</div>';
   document.getElementById('lines').appendChild(g);
-  if(isRLN()) renderInstallSub(g,instAmt);
   icons();
   return g;
 }
@@ -376,34 +370,9 @@ function addConsultLine(amt){
   icons();
   return g;
 }
-// Nested install row: read-only Install + matching product-type chips, with an editable amount.
-function installSubHTML(cat,instAmt){
-  var c=catMeta(cat);
-  return '<div class="installSub" data-kind="install">'+
-    '<div class="fld"><span class="cap">Work Type</span><span class="roChip">'+iconHTML('wrench')+'<span>Install</span></span></div>'+
-    '<div class="fld"><span class="cap">Product Type</span><span class="roChip catchip">'+iconHTML(c[1])+'<span>'+c[2]+'</span></span></div>'+
-    '<div class="fld amt"><span class="cap">Amount</span><input class="lamt instAmt" type="number" step="0.01" placeholder="0.00" value="'+(instAmt!=null?instAmt:'')+'"></div>'+
-    '</div>';
-}
-function renderInstallSub(group,instAmt){
-  var wrap=group.querySelector('.installWrap');if(!wrap)return;
-  wrap.innerHTML=installSubHTML(activeCat(group),instAmt);
-  icons();
-}
-function updateInstallSub(group){
-  var chip=group.querySelector('.installSub .catchip');if(!chip)return;
-  var c=catMeta(activeCat(group));
-  chip.innerHTML=iconHTML(c[1])+'<span>'+c[2]+'</span>';
-  icons();
-}
-// Add/remove nested install rows on every product when the Install toggle flips.
+// Show/hide the Install Amount field on every product line per the Install toggle.
 function syncInstalls(){
-  var on=isRLN();
-  document.querySelectorAll('#lines > .lineGroup[data-kind="product"]').forEach(function(g){
-    var wrap=g.querySelector('.installWrap');if(!wrap)return;
-    if(on){ if(!wrap.querySelector('.installSub')) renderInstallSub(g,null); }
-    else wrap.innerHTML='';
-  });
+  document.getElementById('lines').classList.toggle('selfInstall', !isRLN());
 }
 function hasConsult(){return !!document.querySelector('#lines > .lineGroup[data-kind="consult"]');}
 function openTypeModal(){
@@ -439,11 +408,10 @@ function collect(){
       return;
     }
     var cat=activeCat(g);
-    var pamt=parseFloat(g.querySelector('.productRow .prodAmt').value);
+    var pamt=parseFloat(g.querySelector('.prodAmt').value);
     if(!isNaN(pamt)) lines.push({name:lineName('product',cat),category:cat,kind:'product',amount:pamt});
-    var sub=g.querySelector('.installSub');
-    if(sub){
-      var iamt=parseFloat(sub.querySelector('.instAmt').value);
+    if(isRLN()){
+      var iamt=parseFloat(g.querySelector('.instAmt').value);
       if(!isNaN(iamt)) lines.push({name:lineName('install',cat),category:cat,kind:'install',amount:iamt});
     }
   });
