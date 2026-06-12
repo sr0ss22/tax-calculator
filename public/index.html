@@ -90,10 +90,11 @@
   .srow:first-of-type{border-top:0}
   .srow-l{display:flex;align-items:flex-start;gap:8px}
   .srow-l svg{width:16px;height:16px;color:var(--muted);margin-top:2px;flex:none}
-  .snm{font-weight:600}
+  .snm{font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
   .ssub{color:var(--muted);font-size:12px}
   .sright{text-align:right;white-space:nowrap}
-  .stax{font-variant-numeric:tabular-nums;margin-top:2px}
+  .samt{font-variant-numeric:tabular-nums;color:var(--muted);font-size:12.5px}
+  .stax{font-variant-numeric:tabular-nums;margin-top:2px;font-weight:600}
   .pill{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;padding:1px 8px;border-radius:999px}
   .pill svg{width:12px;height:12px}
   .pill.yes{background:var(--green-bg);color:var(--green)}
@@ -104,6 +105,8 @@
   .totals .grand{font-size:17px;font-weight:700;margin-top:5px}
   .totals .grand b{color:var(--orange-d)}
   .totals .tr.sub{color:var(--muted);font-size:12.5px}
+  .totals .tr.sub span:first-child{display:inline-flex;align-items:center;gap:6px}
+  .totals .tr.sub svg{width:13px;height:13px;color:var(--muted)}
   .totals .tr.tot{margin-top:5px;padding-top:6px;border-top:1px solid #eef0f2;font-weight:600}
   .blend,.notes{margin-top:14px;border-radius:10px;padding:11px 13px;font-size:12.5px;display:flex;gap:9px;align-items:flex-start}
   .blend{background:var(--amber-bg);border:1px solid var(--amber-bd);color:#7a5200}
@@ -450,6 +453,13 @@ function pillFor(l){
   if(!l.found) return '<span class="pill na"><i data-lucide="alert-triangle"></i>N/A</span>';
   return l.taxable?'<span class="pill yes"><i data-lucide="check"></i>Taxable</span>':'<span class="pill no"><i data-lucide="minus"></i>Exempt</span>';
 }
+// Category icon for a summary line: blinds / shutters / drapery.
+function catIcon(cat){
+  var c=(cat||'').toLowerCase();
+  if(c.indexOf('shutter')>=0) return 'columns-3';
+  if(c.indexOf('draper')>=0) return 'curtain';
+  return 'blinds';
+}
 function show(d){
   var lineOut=document.getElementById('lineOut');
   if(d.error){
@@ -479,17 +489,20 @@ function show(d){
       '<div class="bh-sub">Enter this rate into the order system'+(d.rateOverridden?' (manual override)':'')+'</div></div>';
   }
   var lines=(d.lines||[]).map(function(l){
-    var ic=l.kind==='install'?'drill':(l.kind==='consult'?'swatch-book':'blinds');
-    return '<div class="srow"><div class="srow-l">'+iconHTML(ic)+'<div><div class="snm">'+(l.name||'-')+'</div><div class="ssub">'+(l.category||'-')+' &middot; '+fmt(l.amount)+(l.taxable?(' @ '+pct(l.appliedRate)):'')+'</div></div></div>'+
-      '<div class="sright">'+pillFor(l)+'<div class="stax">'+fmt(l.tax)+'</div></div></div>';
+    // Product lines use the category icon; install uses drill; consult uses the design icon.
+    var ic=l.kind==='install'?'drill':(l.kind==='consult'?'swatch-book':catIcon(l.category));
+    var sub=(l.category||'-')+(l.taxable?(' &middot; '+pct(l.appliedRate)):'');
+    return '<div class="srow"><div class="srow-l">'+iconHTML(ic)+
+      '<div><div class="snm">'+(l.name||'-')+pillFor(l)+'</div><div class="ssub">'+sub+'</div></div></div>'+
+      '<div class="sright"><div class="samt">'+fmt(l.amount)+'</div><div class="stax">'+fmt(l.tax)+'</div></div></div>';
   }).join('');
   // Tax broken out by line kind (product / install / consult).
   var byKind={product:0,install:0,consult:0},seen={product:false,install:false,consult:false};
   (d.lines||[]).forEach(function(l){if(l.kind in byKind){byKind[l.kind]+=(l.tax||0);seen[l.kind]=true;}});
   var breakout='';
-  if(seen.product) breakout+='<div class="tr sub"><span>Product tax</span><span>'+fmt(byKind.product)+'</span></div>';
-  if(seen.install) breakout+='<div class="tr sub"><span>Installation tax</span><span>'+fmt(byKind.install)+'</span></div>';
-  if(seen.consult) breakout+='<div class="tr sub"><span>Consultation tax</span><span>'+fmt(byKind.consult)+'</span></div>';
+  if(seen.product) breakout+='<div class="tr sub"><span>'+iconHTML('blinds')+'Product tax</span><span>'+fmt(byKind.product)+'</span></div>';
+  if(seen.install) breakout+='<div class="tr sub"><span>'+iconHTML('drill')+'Installation tax</span><span>'+fmt(byKind.install)+'</span></div>';
+  if(seen.consult) breakout+='<div class="tr sub"><span>'+iconHTML('swatch-book')+'Consultation tax</span><span>'+fmt(byKind.consult)+'</span></div>';
   // Notes/warnings box removed: rate is ZIP-accurate and per-line pills already
   // show Taxable/Exempt/N-A, so the disclaimers were noise.
   lineOut.innerHTML=headHero+lines+
