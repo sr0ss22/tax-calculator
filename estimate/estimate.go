@@ -127,26 +127,15 @@ type builtLine struct {
 	warn  string
 }
 
-// lineTypeForKind maps a line kind to its matrix line type. A product line uses
-// the given product line type (Installed Package for US, Product for Canada); an
-// install line uses Additional Labor Services so it picks up that category's
-// installation-labor taxability, which differs by category and state.
-func lineTypeForKind(kind string, productLineType taxestimate.LineType) (taxestimate.LineType, bool) {
-	switch strings.ToLower(strings.TrimSpace(kind)) {
-	case "", "product":
-		return productLineType, true
-	case "install", "installation", "labor":
-		return taxestimate.LineTypeAdditionalLabor, true
-	default:
-		return "", false
-	}
-}
-
 // buildLines turns the request into calculator inputs. productLineType is the line
-// type for product lines (Installed Package for US, Product for Canada). Each
-// install line is its own category-specific labor line (install blinds, install
-// shutters, and install draperies are taxed separately). The measure fee becomes a
-// consultation-fee line.
+// type for product lines (Installed Package for US, Product for Canada). A line is
+// a product, an install, or a consultation fee:
+//   - product -> the category's product taxability
+//   - install -> the category's Additional Labor Services taxability (install
+//     blinds, install shutters, and install draperies are taxed separately)
+//   - consult -> the Design Consultation Fee line (no category)
+//
+// The legacy MeasureFee field is still honored as a consultation line.
 func buildLines(req Request, productLineType taxestimate.LineType) ([]builtLine, error) {
 	out := make([]builtLine, 0, len(req.Lines)+1)
 
@@ -158,18 +147,27 @@ func buildLines(req Request, productLineType taxestimate.LineType) ([]builtLine,
 		if l.Amount < 0 {
 			return nil, fmt.Errorf("line %d (%s): amount must be non-negative", i+1, name)
 		}
-		cat, ok := categoryFromString(l.Category)
-		if !ok {
-			return nil, fmt.Errorf("line %d (%s): unknown category %q (use blinds, shutters, or draperies)", i+1, name, l.Category)
+
+		var input taxestimate.TaxLineInput
+		switch strings.ToLower(strings.TrimSpace(l.Kind)) {
+		case "consult", "consultation", "fee":
+			// Consultation fee has its own category and line type; the category field
+			// is not used.
+			input = taxestimate.TaxLineInput{Category: taxestimate.CategoryDesignConsultationFee, OrderType: taxestimate.OrderTypeJob, LineType: taxestimate.LineTypeConsultationFee, Amount: l.Amount}
+		case "", "product", "install", "installation", "labor":
+			cat, ok := categoryFromString(l.Category)
+			if !ok {
+				return nil, fmt.Errorf("line %d (%s): unknown category %q (use blinds, shutters, or draperies)", i+1, name, l.Category)
+			}
+			lineType := productLineType
+			if k := strings.ToLower(strings.TrimSpace(l.Kind)); k == "install" || k == "installation" || k == "labor" {
+				lineType = taxestimate.LineTypeAdditionalLabor
+			}
+			input = taxestimate.TaxLineInput{Category: cat, OrderType: taxestimate.OrderTypeJob, LineType: lineType, Amount: l.Amount}
+		default:
+			return nil, fmt.Errorf("line %d (%s): unknown kind %q (use product, install, or consult)", i+1, name, l.Kind)
 		}
-		lineType, ok := lineTypeForKind(l.Kind, productLineType)
-		if !ok {
-			return nil, fmt.Errorf("line %d (%s): unknown kind %q (use product or install)", i+1, name, l.Kind)
-		}
-		out = append(out, builtLine{
-			input: taxestimate.TaxLineInput{Category: cat, OrderType: taxestimate.OrderTypeJob, LineType: lineType, Amount: l.Amount},
-			name:  name,
-		})
+		out = append(out, builtLine{input: input, name: name})
 	}
 
 	if req.MeasureFee > 0 {
