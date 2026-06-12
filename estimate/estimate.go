@@ -227,6 +227,18 @@ func (e *Estimator) estimateUS(ctx context.Context, req Request) (Result, error)
 		if e.rates != nil && strings.TrimSpace(req.Zip) != "" {
 			rate = e.rates.LookupRate(ctx, req.Zip)
 		}
+		// Offline ZIP-level rate from the embedded Avalara monthly table, when
+		// present. More precise than the state average; used when TaxJar is not
+		// configured or returned nothing.
+		if rate.CombinedRate == 0 {
+			if zr, ok := zipRateFor(req.Zip); ok {
+				region := "Avalara monthly ZIP table"
+				if zr.region != "" {
+					region = zr.region + " (Avalara monthly ZIP table)"
+				}
+				rate = taxestimate.RateResult{Zip: req.Zip, CombinedRate: zr.combined, Jurisdictions: region}
+			}
+		}
 		if rate.CombinedRate == 0 {
 			if avg, ok := stateAverageRate(state); ok {
 				rate = taxestimate.RateResult{Zip: req.Zip, CombinedRate: avg, Jurisdictions: "state average combined rate (Tax Foundation 2026)", Estimated: true}
