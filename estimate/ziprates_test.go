@@ -30,6 +30,13 @@ NY,10001-1234,NEW YORK CITY,8.875%,0.04,0.04,0,0.00375,2
 	if zr := out["78664"]; zr.region != "ROUND ROCK" {
 		t.Errorf("region = %q, want ROUND ROCK", zr.region)
 	}
+	// City-rate component drives the boundary-risk flag.
+	if zr := out["78664"]; math.Abs(zr.cityRate-0.01) > 1e-9 {
+		t.Errorf("78664 cityRate = %v, want 0.01", zr.cityRate)
+	}
+	if zr := out["21562"]; zr.cityRate != 0 {
+		t.Errorf("21562 cityRate = %v, want 0", zr.cityRate)
+	}
 }
 
 // TestEmbeddedZipTable confirms the consolidated Avalara table is embedded and

@@ -33,6 +33,7 @@ import (
 type rate struct {
 	combined string // normalized fraction string, e.g. "0.0600"
 	region   string // "DORCHESTER, MD"
+	cityRate string // EstimatedCityRate as a fraction; >0 flags possible ZIP/city-boundary inaccuracy
 }
 
 func main() {
@@ -134,6 +135,7 @@ func parse(r io.Reader, rates map[string]rate) int {
 	zi := col("zipcode", "zip", "postalcode")
 	ci := col("estimatedcombinedrate", "combinedrate", "taxrate")
 	ni := col("taxregionname", "region")
+	cityi := col("estimatedcityrate", "cityrate")
 	if zi < 0 || ci < 0 {
 		return 0
 	}
@@ -170,7 +172,13 @@ func parse(r io.Reader, rates map[string]rate) int {
 				region += st
 			}
 		}
-		rates[zip5] = rate{combined: strconv.FormatFloat(frac, 'f', -1, 64), region: region}
+		city := "0"
+		if cityi >= 0 && cityi < len(rec) {
+			if cf, ok := parseRate(rec[cityi]); ok && cf > 0 {
+				city = strconv.FormatFloat(cf, 'f', -1, 64)
+			}
+		}
+		rates[zip5] = rate{combined: strconv.FormatFloat(frac, 'f', -1, 64), region: region, cityRate: city}
 	}
 	return rows
 }
@@ -186,7 +194,7 @@ func writeOut(path string, rates map[string]rate) error {
 	defer f.Close()
 	w := csv.NewWriter(f)
 	defer w.Flush()
-	if err := w.Write([]string{"ZipCode", "EstimatedCombinedRate", "TaxRegionName"}); err != nil {
+	if err := w.Write([]string{"ZipCode", "EstimatedCombinedRate", "TaxRegionName", "EstimatedCityRate"}); err != nil {
 		return err
 	}
 	zips := make([]string, 0, len(rates))
@@ -195,7 +203,7 @@ func writeOut(path string, rates map[string]rate) error {
 	}
 	sort.Strings(zips)
 	for _, z := range zips {
-		if err := w.Write([]string{z, rates[z].combined, rates[z].region}); err != nil {
+		if err := w.Write([]string{z, rates[z].combined, rates[z].region, rates[z].cityRate}); err != nil {
 			return err
 		}
 	}

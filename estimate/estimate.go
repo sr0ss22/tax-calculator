@@ -58,6 +58,9 @@ type Result struct {
 	CombinedRate   float64      `json:"combinedRate"`
 	RateEstimated  bool         `json:"rateEstimated"`
 	RateOverridden bool         `json:"rateOverridden"`
+	// RateBoundaryRisk is true when the ZIP-table rate includes a city-level tax,
+	// so a ZIP that straddles the city limit may be over/under-stated — verify.
+	RateBoundaryRisk bool `json:"rateBoundaryRisk"`
 	TaxableBase    float64      `json:"taxableBase"`
 	Retail         float64      `json:"retail"`
 	TotalTax       float64      `json:"totalTax"`
@@ -237,6 +240,7 @@ func (e *Estimator) estimateUS(ctx context.Context, req Request) (Result, error)
 					region = zr.region + " (Avalara monthly ZIP table)"
 				}
 				rate = taxestimate.RateResult{Zip: req.Zip, CombinedRate: zr.combined, Jurisdictions: region}
+				res.RateBoundaryRisk = zr.cityRate > 0
 			}
 		}
 		if rate.CombinedRate == 0 {

@@ -24,6 +24,7 @@ var rateDataFS embed.FS
 type zipRate struct {
 	combined float64 // combined state+local rate as a fraction (0.0825 = 8.25%)
 	region   string  // TaxRegionName, for display/provenance
+	cityRate float64 // city-tax component; >0 means the ZIP may cross a city boundary (rate uncertain)
 }
 
 // zipRates is the loaded ZIP -> rate table, built once at startup. Empty when no
@@ -77,6 +78,7 @@ func parseAvalaraCSV(r io.Reader, out map[string]zipRate) {
 	zi := col("zipcode", "zip", "postalcode")
 	ri := col("estimatedcombinedrate", "combinedrate", "taxrate", "totalsalestaxrate")
 	ni := col("taxregionname", "region", "county", "taxregion")
+	cityi := col("estimatedcityrate", "cityrate")
 	if zi < 0 || ri < 0 {
 		return
 	}
@@ -103,7 +105,13 @@ func parseAvalaraCSV(r io.Reader, out map[string]zipRate) {
 		if ni >= 0 && ni < len(rec) {
 			region = strings.TrimSpace(rec[ni])
 		}
-		out[z] = zipRate{combined: rate, region: region}
+		city := 0.0
+		if cityi >= 0 && cityi < len(rec) {
+			if c, ok := parseRate(rec[cityi]); ok {
+				city = c
+			}
+		}
+		out[z] = zipRate{combined: rate, region: region, cityRate: city}
 	}
 }
 

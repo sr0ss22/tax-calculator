@@ -83,6 +83,8 @@
   .blendhero .bh-sub{font-size:12px;color:#7a5200}
   /* applied-rate hero — the jurisdiction rate to key into the order system */
   .ratehero{margin-top:0;margin-bottom:14px;background:linear-gradient(135deg,#eef4ff,#e1ebff);border-color:#c3d4f5}
+  .ratenote{display:flex;gap:8px;align-items:flex-start;margin:0 0 12px;padding:9px 11px;border-radius:9px;background:var(--amber-bg);border:1px solid var(--amber-bd);color:#7a5200;font-size:12px;line-height:1.45}
+  .ratenote svg{width:14px;height:14px;flex:none;margin-top:1px}
   .ratehero .bh-label{color:#2b50a8}
   .ratehero .bh-rate{color:#1f3f8a}
   .ratehero .bh-sub{color:#3a4a63}
@@ -503,9 +505,10 @@ function show(d){
   if(seen.product) breakout+='<div class="tr sub"><span>'+iconHTML('blinds')+'Product tax</span><span>'+fmt(byKind.product)+'</span></div>';
   if(seen.install) breakout+='<div class="tr sub"><span>'+iconHTML('drill')+'Installation tax</span><span>'+fmt(byKind.install)+'</span></div>';
   if(seen.consult) breakout+='<div class="tr sub"><span>'+iconHTML('swatch-book')+'Consultation tax</span><span>'+fmt(byKind.consult)+'</span></div>';
-  // Notes/warnings box removed: rate is ZIP-accurate and per-line pills already
-  // show Taxable/Exempt/N-A, so the disclaimers were noise.
-  lineOut.innerHTML=headHero+lines+
+  // Targeted caution: only when the ZIP-table rate includes a city-level tax,
+  // which can be wrong if the address sits just outside the city limit (e.g. 55430).
+  var note=d.rateBoundaryRisk?'<div class="ratenote"><i data-lucide="info"></i><span>This ZIP includes a city-level tax. If the address is outside the city limits the actual rate may be lower &mdash; verify the local rate and use Rate override if needed.</span></div>':'';
+  lineOut.innerHTML=headHero+note+lines+
     '<div class="totals"><div class="tr"><span>Taxable base</span><span>'+fmt(d.taxableBase)+'</span></div>'+
     breakout+
     '<div class="tr tot"><span>Total tax</span><span>'+fmt(d.totalTax)+'</span></div>'+
