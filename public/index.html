@@ -99,12 +99,19 @@
   .modal{background:#fff;border-radius:14px;padding:22px;width:min(440px,92vw);box-shadow:0 16px 48px rgba(0,0,0,.22)}
   .modal h3{margin:0 0 4px;font-size:16px;font-weight:700}
   .modal p{margin:0 0 16px;color:var(--muted);font-size:13px}
-  .typegrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .typegrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   .typecard{display:flex;flex-direction:column;align-items:center;gap:9px;padding:18px 10px;border:1px solid #d4d7dc;border-radius:11px;background:#fff;cursor:pointer;font-weight:600;font-size:13px;color:#2a2e35}
   .typecard svg{width:24px;height:24px;color:var(--orange)}
   .typecard:hover{border-color:var(--orange);background:#fff7f3}
   .typecard:disabled{opacity:.4;cursor:not-allowed}
   .typecard:disabled:hover{border-color:#d4d7dc;background:#fff}
+  /* product + nested install grouping */
+  .lineGroup{margin-bottom:10px}
+  .installSub{position:relative;display:flex;gap:14px;align-items:flex-end;margin:7px 0 0 30px;padding:10px 12px;border:1px dashed #d8dce1;border-radius:10px;background:#f6f7f9}
+  .installSub::before{content:"";position:absolute;left:-16px;top:-7px;height:24px;width:14px;border-left:2px solid #d8dce1;border-bottom:2px solid #d8dce1;border-bottom-left-radius:8px}
+  /* read-only chip used by the nested install row (matches the product, not editable) */
+  .roChip{display:inline-flex;align-items:center;gap:7px;padding:8px 11px;border:1px solid #e2e5e9;border-radius:9px;background:#fff;color:#5b6470;font-weight:600;white-space:nowrap}
+  .roChip svg{width:16px;height:16px;color:#8a929c}
 </style>
 </head>
 <body>
@@ -127,18 +134,27 @@
         <label>ZIP (US, optional)<input id="zip" value="78664" placeholder="78664"></label>
         <label>Rate override<input id="rate" type="number" step="0.0001" placeholder="e.g. 0.0825" style="width:130px"></label>
       </div>
-      <div style="margin-top:14px">
-        <label style="margin-bottom:6px">Channel</label>
-        <div class="seg" id="channel">
-          <button type="button" class="tog active" data-val="THD" onclick="pickTog(this)"><i data-lucide="house"></i>THD</button>
-          <button type="button" class="tog" data-val="partners" onclick="pickTog(this)"><i data-lucide="store"></i>Other</button>
+      <div style="margin-top:14px;display:flex;gap:26px;flex-wrap:wrap">
+        <div>
+          <label style="margin-bottom:6px">Channel</label>
+          <div class="seg" id="channel">
+            <button type="button" class="tog active" data-val="THD" onclick="pickTog(this)"><i data-lucide="house"></i>THD</button>
+            <button type="button" class="tog" data-val="partners" onclick="pickTog(this)"><i data-lucide="store"></i>Other</button>
+          </div>
+        </div>
+        <div>
+          <label style="margin-bottom:6px">Install</label>
+          <div class="seg" id="install">
+            <button type="button" class="tog active" data-val="RLN" onclick="pickInstall(this)"><i data-lucide="hard-hat"></i>RLN</button>
+            <button type="button" class="tog" data-val="self" onclick="pickInstall(this)"><i data-lucide="user"></i>Self</button>
+          </div>
         </div>
       </div>
     </div>
 
     <div class="card">
       <h2><i data-lucide="layers"></i>Lines</h2>
-      <p class="hint" style="margin:0 0 12px">Add Product or Install lines and pick a category. Install labor is taxed by per-category rules, so add Install Blinds, Install Shutters, and Install Drapery as their own lines. A Design Consultation can be added once as its own line.</p>
+      <p class="hint" style="margin:0 0 12px">Add a product line per window-covering category. With <b>Install: RLN</b>, a matching install line is added automatically under each product&mdash;just enter its labor amount. With <b>Install: Self</b> no install lines are added. A Design Consultation can be added once as its own line.</p>
       <div id="lines"></div>
       <button type="button" class="btn-sec" onclick="openTypeModal()"><i data-lucide="plus"></i>Add line</button>
     </div>
@@ -157,7 +173,6 @@
     <p>What kind of line do you want to add?</p>
     <div class="typegrid">
       <button type="button" class="typecard" data-type="product" onclick="chooseType('product')"><i data-lucide="package"></i>Product</button>
-      <button type="button" class="typecard" data-type="install" onclick="chooseType('install')"><i data-lucide="wrench"></i>Install</button>
       <button type="button" class="typecard" data-type="consult" onclick="chooseType('consult')"><i data-lucide="swatch-book"></i>Consultation</button>
     </div>
   </div>
@@ -166,9 +181,8 @@
 <script>
 var US_STATES=['Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware','District of Columbia','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia','Wisconsin','Wyoming'];
 var CA_PROVINCES=['Alberta','British Columbia','Manitoba','New Brunswick','Newfoundland & Labrador','Northwest Territories','Nova Scotia','Nunavut','Ontario','Prince Edward Island','Quebec','Saskatchewan','Yukon Territory'];
-var TYPES=[['product','package','Product','Product'],['install','wrench','Install','Install'],['consult','swatch-book','Design consultation','Consult']];
-// Consultation is added via the Add-line modal, not as a per-line toggle.
-var TYPES_PI=[['product','package','Product','Product'],['install','wrench','Install','Install']];
+// Product-type categories. Install is no longer a per-line work type: it is driven
+// by the Install toggle (RLN adds a matching install row under each product; Self adds none).
 var CATS=[['blinds','rows-3','Blinds'],['shutters','columns-3','Shutters'],['draperies','curtain','Drapery']];
 function icons(){ if(window.lucide) lucide.createIcons(); }
 // Lucide has no curtain icon, so draperies uses a small inline curtain SVG.
@@ -196,11 +210,19 @@ function pickTog(btn){
   var grp=btn.parentNode;
   grp.querySelectorAll('.tog').forEach(function(b){b.classList.remove('active')});
   btn.classList.add('active');
-  if(grp.classList.contains('typegrp')){
-    var row=btn.closest('.lineRow');var cw=row.querySelector('.catwrap');
-    if(cw) cw.style.display=(btn.dataset.val==='consult')?'none':'';
+  // changing a product's category keeps its nested install row in sync
+  if(grp.classList.contains('catgrp')){
+    var group=btn.closest('.lineGroup');
+    if(group) updateInstallSub(group);
   }
 }
+function pickInstall(btn){
+  var grp=btn.parentNode;
+  grp.querySelectorAll('.tog').forEach(function(b){b.classList.remove('active')});
+  btn.classList.add('active');
+  syncInstalls();
+}
+function isRLN(){var a=document.querySelector('#install .tog.active');return !!a&&a.dataset.val==='RLN';}
 // lineName derives a display name from the work type and product type, since there
 // is no free-text name field.
 function lineName(kind,cat){
@@ -209,24 +231,65 @@ function lineName(kind,cat){
   var base=L[cat]||cat;
   return kind==='install'?('Install '+base):base;
 }
-function addLine(cat,amt,kind){
-  kind=kind||'product';
-  var div=document.createElement('div');div.className='lineRow';
-  var amtFld='<div class="fld amt"><span class="cap">Amount</span><input class="lamt" type="number" step="0.01" placeholder="0.00" value="'+(amt!=null?amt:'')+'"></div>';
-  var rmBtn='<button type="button" class="btn-x" title="Remove line" onclick="this.closest(\'.lineRow\').remove()"><i data-lucide="trash-2"></i></button>';
-  if(kind==='consult'){
-    div.dataset.kind='consult';
-    div.innerHTML='<div class="fld name"><span class="cap">Work Type</span><span class="consultLabel">'+iconHTML('swatch-book')+'<span>Design Consultation</span></span></div>'+amtFld+rmBtn;
-  }else{
-    cat=cat||'blinds';
-    div.dataset.kind='pi';
-    div.innerHTML='<div class="fld"><span class="cap">Work Type</span>'+tog('typegrp',TYPES_PI,kind,true)+'</div>'+
-      '<div class="fld catwrap"><span class="cap">Product Type</span>'+tog('catgrp',CATS,cat,true)+'</div>'+amtFld+rmBtn;
-  }
-  document.getElementById('lines').appendChild(div);
+var rmBtn='<button type="button" class="btn-x" title="Remove line" onclick="this.closest(\'.lineGroup\').remove()"><i data-lucide="trash-2"></i></button>';
+function catMeta(cat){for(var i=0;i<CATS.length;i++){if(CATS[i][0]===cat)return CATS[i];}return CATS[0];}
+function activeCat(group){var b=group.querySelector('.productRow .catgrp .tog.active');return b?b.dataset.val:'blinds';}
+// A product line is one .lineGroup: the product row plus an optional nested install row.
+function addProductLine(cat,amt,instAmt){
+  cat=cat||'blinds';
+  var g=document.createElement('div');g.className='lineGroup';g.dataset.kind='product';
+  g.innerHTML='<div class="lineRow productRow">'+
+      '<div class="fld"><span class="cap">Product Type</span>'+tog('catgrp',CATS,cat,true)+'</div>'+
+      '<div class="fld amt"><span class="cap">Amount</span><input class="lamt prodAmt" type="number" step="0.01" placeholder="0.00" value="'+(amt!=null?amt:'')+'"></div>'+
+      rmBtn+
+    '</div>'+
+    '<div class="installWrap"></div>';
+  document.getElementById('lines').appendChild(g);
+  if(isRLN()) renderInstallSub(g,instAmt);
+  icons();
+  return g;
+}
+function addConsultLine(amt){
+  var g=document.createElement('div');g.className='lineGroup';g.dataset.kind='consult';
+  g.innerHTML='<div class="lineRow consultRow">'+
+      '<div class="fld name"><span class="cap">Work Type</span><span class="consultLabel">'+iconHTML('swatch-book')+'<span>Design Consultation</span></span></div>'+
+      '<div class="fld amt"><span class="cap">Amount</span><input class="lamt" type="number" step="0.01" placeholder="0.00" value="'+(amt!=null?amt:'')+'"></div>'+
+      rmBtn+
+    '</div>';
+  document.getElementById('lines').appendChild(g);
+  icons();
+  return g;
+}
+// Nested install row: read-only Install + matching product-type chips, with an editable amount.
+function installSubHTML(cat,instAmt){
+  var c=catMeta(cat);
+  return '<div class="installSub" data-kind="install">'+
+    '<div class="fld"><span class="cap">Work Type</span><span class="roChip">'+iconHTML('wrench')+'<span>Install</span></span></div>'+
+    '<div class="fld"><span class="cap">Product Type</span><span class="roChip catchip">'+iconHTML(c[1])+'<span>'+c[2]+'</span></span></div>'+
+    '<div class="fld amt"><span class="cap">Amount</span><input class="lamt instAmt" type="number" step="0.01" placeholder="0.00" value="'+(instAmt!=null?instAmt:'')+'"></div>'+
+    '</div>';
+}
+function renderInstallSub(group,instAmt){
+  var wrap=group.querySelector('.installWrap');if(!wrap)return;
+  wrap.innerHTML=installSubHTML(activeCat(group),instAmt);
   icons();
 }
-function hasConsult(){return !!document.querySelector('#lines .lineRow[data-kind="consult"]');}
+function updateInstallSub(group){
+  var chip=group.querySelector('.installSub .catchip');if(!chip)return;
+  var c=catMeta(activeCat(group));
+  chip.innerHTML=iconHTML(c[1])+'<span>'+c[2]+'</span>';
+  icons();
+}
+// Add/remove nested install rows on every product when the Install toggle flips.
+function syncInstalls(){
+  var on=isRLN();
+  document.querySelectorAll('#lines > .lineGroup[data-kind="product"]').forEach(function(g){
+    var wrap=g.querySelector('.installWrap');if(!wrap)return;
+    if(on){ if(!wrap.querySelector('.installSub')) renderInstallSub(g,null); }
+    else wrap.innerHTML='';
+  });
+}
+function hasConsult(){return !!document.querySelector('#lines > .lineGroup[data-kind="consult"]');}
 function openTypeModal(){
   var m=document.getElementById('typeModal');
   var cbtn=m.querySelector('[data-type="consult"]');
@@ -239,23 +302,26 @@ function closeTypeModal(){document.getElementById('typeModal').classList.remove(
 function chooseType(kind){
   if(kind==='consult'&&hasConsult())return;
   closeTypeModal();
-  addLine(kind==='consult'?null:'blinds',null,kind);
+  if(kind==='consult') addConsultLine(null); else addProductLine('blinds',null,null);
 }
 function fmt(v){return (v||0).toLocaleString('en-US',{style:'currency',currency:'USD'})}
 function pct(r){return ((r||0)*100).toFixed(3)+'%'}
 function collect(){
   var lines=[];
-  document.querySelectorAll('#lines .lineRow').forEach(function(row){
-    var kind,cat='';
-    if(row.dataset.kind==='consult'){
-      kind='consult';
-    }else{
-      kind=row.querySelector('.typegrp .tog.active').dataset.val;
-      var catBtn=row.querySelector('.catgrp .tog.active');
-      cat=catBtn?catBtn.dataset.val:'';
+  document.querySelectorAll('#lines > .lineGroup').forEach(function(g){
+    if(g.dataset.kind==='consult'){
+      var camt=parseFloat(g.querySelector('.lamt').value);
+      if(!isNaN(camt)) lines.push({name:lineName('consult',''),category:'',kind:'consult',amount:camt});
+      return;
     }
-    var amt=parseFloat(row.querySelector('.lamt').value);
-    if(!isNaN(amt)) lines.push({name:lineName(kind,cat),category:cat,kind:kind,amount:amt});
+    var cat=activeCat(g);
+    var pamt=parseFloat(g.querySelector('.productRow .prodAmt').value);
+    if(!isNaN(pamt)) lines.push({name:lineName('product',cat),category:cat,kind:'product',amount:pamt});
+    var sub=g.querySelector('.installSub');
+    if(sub){
+      var iamt=parseFloat(sub.querySelector('.instAmt').value);
+      if(!isNaN(iamt)) lines.push({name:lineName('install',cat),category:cat,kind:'install',amount:iamt});
+    }
   });
   var ro=parseFloat(document.getElementById('rate').value);
   return {
@@ -307,11 +373,9 @@ async function run(){
 }
 // Build the page, then estimate the seeded example.
 populateStates();
-addLine('draperies',1500,'product');
-addLine('blinds',1000,'product');
-addLine('draperies',500,'install');
-addLine('blinds',500,'install');
-addLine(null,150,'consult');
+addProductLine('draperies',1500,500);
+addProductLine('blinds',1000,500);
+addConsultLine(150);
 icons();
 run();
 </script>
