@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tax Resources</title>
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+  :root{
+    --bg:#f5f6f8; --card:#ffffff; --border:#e6e8eb; --ink:#16181d; --muted:#6b7280;
+    --orange:#fb5e1e; --orange-d:#e44f12; --header:#15161a;
+    --green-bg:#e7f7ec; --green:#1a7f3c; --gray-bg:#f1f2f4; --gray:#5b6470;
+    --red-bg:#fdecec; --red:#c0392b; --amber-bg:#fff6e6; --amber-bd:#f0d9a8;
+    --radius:12px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif}
+  a{color:inherit}
+  /* ---- shared topbar (matches the calculator) ---- */
+  .topbar{background:var(--header);color:#fff;padding:14px 22px;display:flex;align-items:center;gap:14px}
+  .logo{width:18px;height:18px;border-radius:4px;background:linear-gradient(135deg,#ff7a18,#e0341d);transform:rotate(45deg)}
+  .brand{font-weight:700;letter-spacing:.3px}
+  .topbar .divider{width:1px;height:20px;background:#3a3c42}
+  .topbar h1{font-size:15px;font-weight:600;margin:0;color:#e9eaec}
+  .topbar .subtitle{color:#9da1a8;font-size:12.5px;border-left:1px solid #3a3c42;padding-left:14px}
+  .navlink{margin-left:auto;display:inline-flex;align-items:center;gap:6px;color:#e9eaec;text-decoration:none;font-size:13px;font-weight:600;padding:6px 11px;border-radius:8px;border:1px solid #34363c}
+  .navlink:hover{background:#23252b;color:#fff}
+  .navlink svg{width:15px;height:15px;color:var(--orange)}
+  .wrap{max-width:1100px;margin:26px auto;padding:0 18px}
+  /* ---- page hero ---- */
+  .pagehead{margin:0 0 6px;font-size:22px;font-weight:800;letter-spacing:-.2px;display:flex;align-items:center;gap:10px}
+  .pagehead svg{width:24px;height:24px;color:var(--orange)}
+  .lead{color:var(--muted);margin:0 0 22px;font-size:14px;max-width:70ch}
+  /* ---- big hero buttons ---- */
+  .herogrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:34px}
+  @media(max-width:860px){.herogrid{grid-template-columns:1fr 1fr}.topbar .subtitle{display:none}}
+  @media(max-width:560px){.herogrid{grid-template-columns:1fr}}
+  .hero{display:flex;flex-direction:column;gap:9px;text-align:left;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;cursor:pointer;text-decoration:none;color:inherit;box-shadow:0 1px 2px rgba(16,24,40,.04);transition:transform .12s ease,box-shadow .12s ease,border-color .12s ease;position:relative}
+  .hero:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(16,24,40,.12);border-color:#d7dadf}
+  .hero .ic{width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#fff1ea,#ffe2d4);color:var(--orange-d)}
+  .hero .ic svg{width:24px;height:24px}
+  .hero h3{margin:2px 0 0;font-size:15.5px;font-weight:700}
+  .hero p{margin:0;color:var(--muted);font-size:12.5px;line-height:1.45}
+  .hero .go{margin-top:auto;display:inline-flex;align-items:center;gap:5px;color:var(--orange-d);font-size:12.5px;font-weight:700;padding-top:6px}
+  .hero .go svg{width:14px;height:14px}
+  /* each hero gets a distinct accent wash on the icon */
+  .hero.h-state .ic{background:linear-gradient(135deg,#e9f1ff,#d6e6ff);color:#2b50a8}
+  .hero.h-thd  .ic{background:linear-gradient(135deg,#fff1ea,#ffe2d4);color:var(--orange-d)}
+  .hero.h-chan .ic{background:linear-gradient(135deg,#f3eaff,#e7d7ff);color:#6b35c9}
+  .hero.h-ca   .ic{background:linear-gradient(135deg,#e7f7ec,#cdeed6);color:#1a7f3c}
+  .hero.h-blend .ic{background:linear-gradient(135deg,#fff6e6,#ffe9bf);color:#a85416}
+  .hero.h-how  .ic{background:linear-gradient(135deg,#e6f6f8,#cfeef2);color:#0f7d8c}
+  .hero.h-calc .ic{background:linear-gradient(135deg,#fdecec,#fbd6d6);color:#c0392b}
+  /* ---- content sections ---- */
+  .section{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:18px;scroll-margin-top:18px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+  .section h2{display:flex;align-items:center;gap:9px;font-size:16px;font-weight:700;margin:0 0 4px}
+  .section h2 svg{width:18px;height:18px;color:var(--orange)}
+  .section .meta{color:var(--muted);font-size:12.5px;margin:0 0 14px}
+  .badge{display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:2px 9px;margin-left:8px;vertical-align:middle}
+  .badge.eff{background:var(--gray-bg);color:var(--gray)}
+  /* state-link search + grid */
+  .search{display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:10px;padding:8px 12px;margin-bottom:14px;background:#fbfbfc}
+  .search svg{width:16px;height:16px;color:var(--muted)}
+  .search input{border:0;outline:none;background:none;font-size:14px;width:100%;color:var(--ink)}
+  .states{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  @media(max-width:860px){.states{grid-template-columns:1fr 1fr}}
+  @media(max-width:560px){.states{grid-template-columns:1fr}}
+  .slink{display:flex;align-items:center;gap:9px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;text-decoration:none;color:var(--ink);font-size:13px;font-weight:600;background:#fff}
+  .slink:hover{border-color:var(--orange);background:#fff7f3}
+  .slink .nm{flex:1}
+  .slink .ext{width:14px;height:14px;color:var(--muted)}
+  .slink.notax{color:var(--muted);font-weight:500;cursor:default;background:#fafbfc}
+  .slink.notax .tagx{font-size:11px;font-weight:700;color:var(--green);background:var(--green-bg);border-radius:999px;padding:1px 8px}
+  .slink .ctynote{font-size:10.5px;font-weight:700;color:#a85416;background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:999px;padding:1px 7px}
+  .note{display:flex;gap:9px;align-items:flex-start;background:#f3f6fb;border:1px solid #dde6f2;color:#3a4a63;border-radius:10px;padding:11px 13px;font-size:12.5px;margin-top:14px}
+  .note svg{width:15px;height:15px;flex:none;margin-top:1px;color:#3a4a63}
+  .note.warn{background:var(--amber-bg);border-color:var(--amber-bd);color:#7a5200}
+  .note.warn svg{color:#7a5200}
+  /* simple table for Canada / chart summaries */
+  table{border-collapse:collapse;width:100%;font-size:13px;margin-top:4px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--border)}
+  th{font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);font-weight:700}
+  td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
+  ol.steps{margin:6px 0 0;padding-left:20px}
+  ol.steps li{margin:4px 0}
+  .foot{color:var(--muted);font-size:12px;text-align:center;margin:26px 0 8px}
+  .backtop{display:inline-flex;align-items:center;gap:5px;color:var(--orange-d);font-weight:700;font-size:12px;text-decoration:none;margin-top:12px}
+  .backtop svg{width:13px;height:13px}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <span class="logo"></span><span class="brand">brite</span>
+  <span class="divider"></span>
+  <h1>Tax Resources</h1>
+  <span class="subtitle">Official rate lookups, taxability charts, and how-tos for RLN quoting.</span>
+  <a class="navlink" href="/"><i data-lucide="calculator"></i>Open Calculator</a>
+</header>
+
+<div class="wrap">
+  <h1 class="pagehead"><i data-lucide="library-big"></i>Tax Resources</h1>
+  <p class="lead">Everything you need to find a rate and confirm taxability for an RLN quote. Pick a card to jump to it. Rates here are estimates — SAP remains the system of record for actual tax.</p>
+
+  <div class="herogrid">
+    <a class="hero h-state" href="#state-lookups">
+      <span class="ic"><i data-lucide="map-pinned"></i></span>
+      <h3>State Rate Lookups</h3>
+      <p>Official state revenue-department lookups for the exact local rate by address — all 50 states + DC.</p>
+      <span class="go">Find a rate <i data-lucide="arrow-right"></i></span>
+    </a>
+    <a class="hero h-thd" href="#thd-chart">
+      <span class="ic"><i data-lucide="house"></i></span>
+      <h3>THD Window Tax Chart</h3>
+      <p>Home Depot taxability matrix — what's taxable by state, product, and order type.</p>
+      <span class="go">View chart <i data-lucide="arrow-right"></i></span>
+    </a>
+    <a class="hero h-chan" href="#channel-chart">
+      <span class="ic"><i data-lucide="store"></i></span>
+      <h3>Channel Tax Chart</h3>
+      <p>Decorview / Macy's / DirectBuy / JCPenney taxability — different rules than THD.</p>
+      <span class="go">View chart <i data-lucide="arrow-right"></i></span>
+    </a>
+    <a class="hero h-ca" href="#canada">
+      <span class="ic"><i data-lucide="leaf"></i></span>
+      <h3>Canada Tax Rates</h3>
+      <p>Static province GST/HST/PST rates, including the BC drapery exception.</p>
+      <span class="go">View rates <i data-lucide="arrow-right"></i></span>
+    </a>
+    <a class="hero h-blend" href="#blended">
+      <span class="ic"><i data-lucide="scale"></i></span>
+      <h3>Blended Tax Guide</h3>
+      <p>When a THD job mixes blinds + shutters — how the single weighted rate is figured.</p>
+      <span class="go">How it works <i data-lucide="arrow-right"></i></span>
+    </a>
+    <a class="hero h-how" href="#howto">
+      <span class="ic"><i data-lucide="list-checks"></i></span>
+      <h3>Download Rates: How-To</h3>
+      <p>The step-by-step for finding and entering a tax rate on a quote in Salesforce.</p>
+      <span class="go">See the steps <i data-lucide="arrow-right"></i></span>
+    </a>
+  </div>
+
+  <!-- STATE LOOKUPS -->
+  <section class="section" id="state-lookups">
+    <h2><i data-lucide="map-pinned"></i>Official State Rate Lookups</h2>
+    <p class="meta">Each link opens that state's official rate-lookup tool. Enter the install address to get the exact combined rate, then key it into the quote as the rate override. Source: THD Window Tax Chart.</p>
+    <div class="search">
+      <i data-lucide="search"></i>
+      <input id="stateSearch" type="text" placeholder="Filter states…" autocomplete="off">
+    </div>
+    <div class="states" id="stateList"></div>
+    <div class="note"><i data-lucide="info"></i><span><b>Alaska</b> has no statewide tax — rate is by locality (Anchorage, Juneau, Kenai, Wasilla). <b>Georgia</b> rate varies by county. <b>Delaware, Montana, New Hampshire, Oregon</b> have no sales tax.</span></div>
+  </section>
+
+  <!-- THD CHART -->
+  <section class="section" id="thd-chart">
+    <h2><i data-lucide="house"></i>THD Window Tax Chart<span class="badge eff">Effective 2025-03-21</span></h2>
+    <p class="meta">Home Depot taxability matrix used for RLN quotes through the THD channel.</p>
+    <p>The chart flags <b>taxability</b> (yes/no), not rates — the rate comes from the state lookup above. THD's model taxes the <b>installed package</b> (product + install labor) as a unit, so within a product category the flags almost always move together (all taxable or all exempt).</p>
+    <ul>
+      <li><b>Blinds &amp; Draperies</b> are taxable in most tax states; <b>Shutters</b> are frequently exempt (treated as a real-property improvement) — that mismatch is what triggers blended tax.</li>
+      <li><b>Iowa</b> is the systematic exception: labor taxable, product not.</li>
+      <li><b>District of Columbia:</b> Blinds &amp; Draperies taxable; Shutters not applicable.</li>
+      <li>No-tax states: Delaware, Montana, New Hampshire, Oregon (plus Alaska = local only).</li>
+    </ul>
+    <div class="note warn"><i data-lucide="triangle-alert"></i><span>This is a maintained artifact (last reissued 2025-03-21). Always confirm against the current chart in Salesforce → <b>Designer Links → Tax Rates - THD Sales</b> before relying on it.</span></div>
+    <a class="backtop" href="#top"><i data-lucide="arrow-up"></i>Back to top</a>
+  </section>
+
+  <!-- CHANNEL CHART -->
+  <section class="section" id="channel-chart">
+    <h2><i data-lucide="store"></i>Channel Tax Chart<span class="badge eff">Updated 2024-03</span></h2>
+    <p class="meta">Decorview / Macy's / DirectBuy / JCPenney taxability matrix.</p>
+    <p>The non-THD channels use a different model: they distinguish <b>product-taxable</b> from <b>install-labor-taxable</b> per state (commonly product&nbsp;Yes / install&nbsp;No). Install labor is taxable in only ~17 states here, versus ~30 jurisdictions for THD. Several states flip between the two charts — e.g. <b>California</b> is fully non-taxable on THD but product-taxable on the channel chart; <b>New Jersey</b> is the reverse.</p>
+    <div class="note"><i data-lucide="info"></i><span>Pick the channel (<b>THD</b> vs <b>Other</b>) correctly in the calculator — the taxability flags differ by chart.</span></div>
+    <a class="backtop" href="#top"><i data-lucide="arrow-up"></i>Back to top</a>
+  </section>
+
+  <!-- CANADA -->
+  <section class="section" id="canada">
+    <h2><i data-lucide="leaf"></i>Canada Tax Rates<span class="badge eff">Chart 6.9.2026</span></h2>
+    <p class="meta">Static province rates from the Canada window tax chart (Costco / Decorview / DirectBuy). Every line is taxable; no address lookup needed.</p>
+    <table>
+      <thead><tr><th>Province</th><th>Components</th><th class="r">Combined</th></tr></thead>
+      <tbody id="caRates"></tbody>
+    </table>
+    <div class="note"><i data-lucide="info"></i><span><b>British Columbia:</b> PST (7%) applies only to the Draperies &amp; Workroom product line (→12%); blinds, shutters, and all installation are GST-only (5%).</span></div>
+    <a class="backtop" href="#top"><i data-lucide="arrow-up"></i>Back to top</a>
+  </section>
+
+  <!-- BLENDED -->
+  <section class="section" id="blended">
+    <h2><i data-lucide="scale"></i>Blended Tax Guide</h2>
+    <p class="meta">A THD-only order-entry workaround — not a state-law concept.</p>
+    <p><b>When it applies:</b> a single THD job mixes <b>Blinds</b> and <b>Shutters</b> in a state where their taxability differs (e.g. Texas — blinds taxable, shutters exempt). Because order entry takes one rate for the whole order, you enter a single weighted-average rate.</p>
+    <p><b>How the rate is figured:</b></p>
+    <ol class="steps">
+      <li>Tax each line by its own taxability (taxable lines × the local rate; exempt lines = $0 tax).</li>
+      <li>Blended rate = <b>total tax ÷ total retail</b> across the whole order.</li>
+      <li>Enter that one rate on both the <b>TAX</b> and <b>TAX-Install</b> lines.</li>
+      <li>Add the mandatory Salesforce Note titled <b>"THD Blinds and Shutters"</b> recording the inputs.</li>
+    </ol>
+    <div class="note"><i data-lucide="info"></i><span>The calculator computes this automatically — when a blended case is detected it shows the <b>Blended tax rate</b> to key in. This page is the reference for what it's doing.</span></div>
+    <a class="backtop" href="#top"><i data-lucide="arrow-up"></i>Back to top</a>
+  </section>
+
+  <!-- HOW TO -->
+  <section class="section" id="howto">
+    <h2><i data-lucide="list-checks"></i>Download Rates &amp; Enter on a Quote</h2>
+    <p class="meta">The current Salesforce workflow for finding a rate and applying it to line items.</p>
+    <ol class="steps">
+      <li>On the Opportunity, copy the consumer's <b>install address</b>.</li>
+      <li>Home tab → <b>Designer Links</b> → <b>Tax Rates - THD Sales</b> → <b>Download</b>.</li>
+      <li>Open <b>The Home Depot Window Tax Chart US</b> PDF; find the state and confirm whether it's taxable by product category.</li>
+      <li>Click the state's link (or use the <a href="#state-lookups">State Rate Lookups</a> above), paste the address, and read the combined rate.</li>
+      <li>Back in the quote → <b>Manage Line Items</b> → enter the rate in <b>Tax Rate %</b> → <b>Save and Close</b>.</li>
+      <li>Apply the same rate to any added installation/service lines.</li>
+    </ol>
+    <a class="backtop" href="#top"><i data-lucide="arrow-up"></i>Back to top</a>
+  </section>
+
+  <p class="foot">Estimate only · SAP is the system of record for actual tax · RDIS-135</p>
+</div>
+
+<a id="top"></a>
+<script>
+// 46 official state rate-lookup links extracted from the THD Window Tax Chart,
+// plus the no-sales-tax states. notax → not a link; county → rate varies locally.
+var STATES=[
+  {s:"Alabama"},
+  {s:"Alaska",u:"https://alaska.ttr.services/",note:"local only"},
+  {s:"Arizona",u:"https://www.aztaxes.gov/Home/Address/"},
+  {s:"Arkansas",u:"https://www.dfa.arkansas.gov/sales-and-use-tax-section-local-tax-lookup-tools"},
+  {s:"California",u:"https://maps.cdtfa.ca.gov/"},
+  {s:"Colorado",u:"https://colorado.ttr.services/"},
+  {s:"Connecticut",u:"https://www.salestaxhandbook.com/connecticut/rates"},
+  {s:"Delaware",notax:true},
+  {s:"District of Columbia",u:"https://www.salestaxhandbook.com/district-of-columbia/calculator"},
+  {s:"Florida",u:"https://pointmatch.floridarevenue.com/Default.aspx"},
+  {s:"Georgia",u:"https://dor.georgia.gov/sales-tax-rates-general",county:true},
+  {s:"Hawaii",u:"http://www.tax-rates.org/hawaii/sales-tax-calculator"},
+  {s:"Idaho",u:"https://www.sale-tax.com/Idaho"},
+  {s:"Illinois",u:"https://mytax.illinois.gov/_/#1"},
+  {s:"Indiana",u:"https://www.salestaxhandbook.com/indiana/rates"},
+  {s:"Iowa",u:"https://lge.iowa.gov/SalesTaxRate.html"},
+  {s:"Kansas",u:"https://www.kssst.kdor.ks.gov/webLookup.cfm"},
+  {s:"Kentucky",u:"https://www.salestaxhandbook.com/kentucky/rates"},
+  {s:"Louisiana",u:"https://parishe-file.revenue.louisiana.gov/lookup/lookup.aspx"},
+  {s:"Maine",u:"https://www.salestaxhandbook.com/maine/rates"},
+  {s:"Maryland",u:"https://www.salestaxhandbook.com/maryland/rates"},
+  {s:"Massachusetts",u:"https://www.sale-tax.com/Massachusetts"},
+  {s:"Michigan",u:"https://www.sale-tax.com/Michigan"},
+  {s:"Minnesota",u:"https://www.revenue.state.mn.us/sales-tax-rate-calculator"},
+  {s:"Mississippi",u:"https://www.sale-tax.com/Mississippi"},
+  {s:"Missouri",u:"https://mytax.mo.gov/rptp/portal/home/business/customFindSalesUseTaxRates"},
+  {s:"Montana",notax:true},
+  {s:"Nebraska",u:"https://gis.ne.gov/portal/apps/webappviewer/index.html?id=8d517191978849dabda17a5e3d57cacc"},
+  {s:"Nevada",u:"https://www.sale-tax.com/Nevada"},
+  {s:"New Hampshire",notax:true},
+  {s:"New Jersey",u:"https://www.salestaxhandbook.com/new-jersey/rates"},
+  {s:"New Mexico",u:"https://www.sale-tax.com/NewMexico"},
+  {s:"New York",u:"https://www8.tax.ny.gov/JRLA/jrlaStart"},
+  {s:"North Carolina",u:"https://www.salestaxhandbook.com/north-carolina/rates"},
+  {s:"North Dakota",u:"https://www.salestaxhandbook.com/north-dakota/calculator"},
+  {s:"Ohio",u:"https://thefinder.tax.ohio.gov/StreamlineSalesTaxWeb/AddressLookup/LookupByAddress.aspx?taxType=Sales"},
+  {s:"Oklahoma",u:"https://taxproject.csa.ou.edu/Rate_Locator"},
+  {s:"Oregon",notax:true},
+  {s:"Pennsylvania",u:"https://www.sale-tax.com/Pennsylvania"},
+  {s:"Rhode Island",u:"https://www.sales-taxes.com/ri"},
+  {s:"South Carolina",u:"https://www.salestaxhandbook.com/south-carolina/calculator"},
+  {s:"South Dakota",u:"https://apps.sd.gov/rv25taxmatch/main.aspx"},
+  {s:"Tennessee",u:"https://tnmap.tn.gov/sst/sst.html"},
+  {s:"Texas",u:"https://mycpa.cpa.state.tx.us/atj/search"},
+  {s:"Utah",u:"https://tax.utah.gov/sales/rates"},
+  {s:"Vermont",u:"https://www.salestaxhandbook.com/vermont/rates"},
+  {s:"Virginia",u:"https://www.tax.virginia.gov/sales-tax-rate-and-locality-code-lookup"},
+  {s:"Washington",u:"https://webgis.dor.wa.gov/taxratelookup/SalesTax.aspx"},
+  {s:"West Virginia",u:"https://www.sale-tax.com/WestVirginia"},
+  {s:"Wisconsin",u:"https://www.salestaxhandbook.com/wisconsin/rates"},
+  {s:"Wyoming",u:"https://ratelookup.wyo.gov/"}
+];
+var CA=[
+  ["Alberta","GST 5%",5],["British Columbia","GST 5% (+PST 7% drapery)",5],
+  ["Manitoba","GST 5% + PST 7%",12],["New Brunswick","HST 15%",15],
+  ["Newfoundland & Labrador","HST 15%",15],["Northwest Territories","GST 5%",5],
+  ["Nova Scotia","HST 14%",14],["Nunavut","GST 5%",5],["Ontario","HST 13%",13],
+  ["Prince Edward Island","HST 15%",15],["Quebec","GST 5% + QST 9.975%",14.975],
+  ["Saskatchewan","GST 5% + PST 6%",11],["Yukon Territory","GST 5%",5]
+];
+function el(tag,cls,html){var e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e;}
+function renderStates(filter){
+  var list=document.getElementById('stateList');list.innerHTML='';
+  var f=(filter||'').trim().toLowerCase();
+  STATES.filter(function(x){return !f||x.s.toLowerCase().indexOf(f)>=0;}).forEach(function(x){
+    var a;
+    if(x.notax){
+      a=el('div','slink notax','<span class="nm">'+x.s+'</span><span class="tagx">No sales tax</span>');
+    }else if(!x.u){
+      a=el('div','slink notax','<span class="nm">'+x.s+'</span>');
+    }else{
+      a=el('a','slink');a.href=x.u;a.target='_blank';a.rel='noopener';
+      a.innerHTML='<span class="nm">'+x.s+'</span>'+(x.county?'<span class="ctynote">by county</span>':'')+'<i data-lucide="external-link" class="ext"></i>';
+    }
+    list.appendChild(a);
+  });
+  if(window.lucide)lucide.createIcons();
+}
+function renderCanada(){
+  var tb=document.getElementById('caRates');
+  CA.forEach(function(r){
+    tb.appendChild(el('tr',null,'<td>'+r[0]+'</td><td>'+r[1]+'</td><td class="r">'+r[2]+'%</td>'));
+  });
+}
+renderStates('');
+renderCanada();
+document.getElementById('stateSearch').addEventListener('input',function(e){renderStates(e.target.value);});
+// Smooth-scroll for the hero/anchor links.
+document.querySelectorAll('a[href^="#"]').forEach(function(a){
+  a.addEventListener('click',function(ev){
+    var id=a.getAttribute('href').slice(1);var t=id?document.getElementById(id):null;
+    if(t){ev.preventDefault();t.scrollIntoView({behavior:'smooth',block:'start'});}
+  });
+});
+if(window.lucide)lucide.createIcons();
+</script>
+</body>
+</html>
