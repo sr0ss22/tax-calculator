@@ -37,9 +37,9 @@
   .fldlbl{font-size:12.5px;font-weight:500;color:#3a3f48}
   /* Label with an inline info button (hover on desktop, tap/focus on mobile). */
   .lblrow{display:inline-flex;align-items:center;gap:5px}
-  .infobtn{position:relative;display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;padding:0;border:0;border-radius:50%;background:#c4c8ce;color:#fff;cursor:pointer;-webkit-tap-highlight-color:transparent}
-  .infobtn svg{width:10px;height:10px}
-  .infobtn:hover,.infobtn:focus{background:var(--orange);outline:none}
+  .infobtn{position:relative;display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;padding:0;border:0;background:none;color:#9aa0a8;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .infobtn svg{width:15px;height:15px}
+  .infobtn:hover,.infobtn:focus{color:var(--orange);outline:none}
   .infobtn[data-tip]:hover::after,.infobtn[data-tip]:focus::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 8px);left:0;width:max-content;max-width:210px;white-space:normal;text-align:left;line-height:1.4;background:#15161a;color:#fff;font-size:11px;font-weight:600;padding:7px 10px;border-radius:7px;box-shadow:0 4px 14px rgba(0,0,0,.22);z-index:30;pointer-events:none}
   .infobtn[data-tip]:hover::before,.infobtn[data-tip]:focus::before{content:"";position:absolute;bottom:calc(100% + 3px);left:4px;border:5px solid transparent;border-top-color:#15161a;z-index:30;pointer-events:none}
   .zipin{width:84px}
@@ -70,6 +70,12 @@
   .fld.amt{margin-left:auto}
   .cap{font-size:11px;font-weight:600;color:#6b7280;display:inline-flex;align-items:center;gap:5px}
   .cap svg{width:13px;height:13px;color:var(--orange)}
+  /* Larger field titles on desktop (State or Province, ZIP, Channel, Install,
+     Product Type, Product/Install Amount). Mobile keeps the compact sizes. */
+  @media(min-width:861px){
+    label,.fldlbl{font-size:14px}
+    .cap{font-size:13px}
+  }
   .lname{width:100%}
   .lamt{width:120px}
   .btn-x{position:absolute;top:8px;right:8px;background:transparent;border:0;color:#b0b4bb;padding:6px;border-radius:8px;line-height:0}
@@ -211,7 +217,7 @@
     <div class="card">
       <h2><i data-lucide="map-pin"></i>Location and channel</h2>
       <div class="row">
-        <label>State or province<select id="state" onchange="onStateChange()"></select></label>
+        <label>State or Province<select id="state" onchange="onStateChange()"></select></label>
         <label>ZIP (US)<input id="zip" class="zipin" maxlength="10" placeholder="ZIP"></label>
         <div class="fldcol"><span class="fldlbl">Channel</span>
           <div class="seg" id="channel">
