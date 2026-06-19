@@ -1,6 +1,6 @@
 # Quote Tax Estimate (standalone)
 
-A self-contained sales-tax estimate calculator for window-covering quotes, deployable to Vercel. It runs the same tax engine as the Brite RDIS-135 work (US taxability matrix with the THD blended rate, static Canada province rates with the BC and MB exceptions, optional TaxJar US rate lookup, and the measure/installation fee handling) with no Brite service dependencies.
+A self-contained sales-tax estimate calculator for window-covering quotes, deployable to Vercel. It runs the same tax engine as the Brite RDIS-135 work (US taxability matrix with the THD blended rate, static Canada province rates with the BC exception, optional TaxJar US rate lookup, and per-category installation labor handling) with no Brite service dependencies.
 
 This is an estimate. SAP remains the system of record for actual tax.
 
@@ -35,7 +35,6 @@ vercel dev      # runs the function + static page locally at http://localhost:30
   "state": "Illinois",
   "zip": "60601",
   "rateOverride": 0.07,
-  "measureFee": 120,
   "lines": [
     {"name": "Drapery", "category": "draperies", "kind": "product", "amount": 1500},
     {"name": "Blinds", "category": "blinds", "kind": "product", "amount": 1000},

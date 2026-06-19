@@ -7,19 +7,17 @@ import (
 	"sync"
 )
 
-// Canada taxes every window-covering line (product, installation, warranty,
-// consultation) in every province. There are no Yes/No taxability flags like the
-// US charts have, only rates, and the rates are static from the Canada window tax
-// chart (Costco / Decorview / DirectBuy, updated 2025-04-02). So Canada needs no
-// taxability matrix, no address-level lookup, and no external rate provider (no
-// TaxJar): the province alone determines the rate.
+// Canada taxes every window-covering line (product, installation, warranty) in
+// every province. There are no Yes/No taxability flags like the US charts have,
+// only rates, and the rates are static from the Canada window tax chart (Costco /
+// Decorview / DirectBuy, updated 2025-04-02). So Canada needs no taxability
+// matrix, no address-level lookup, and no external rate provider (no TaxJar): the
+// province alone determines the rate.
 //
-// Two province-level exceptions are the only nuance:
+// One province-level exception is the only nuance:
 //   - British Columbia charges PST (7%) ONLY on the Draperies and Workroom product
-//     line (12% combined). Blinds, shutters, drapery hardware, all installation,
-//     and consultation fees are GST-only (5%).
-//   - Manitoba charges the Design Consultation Fee at GST only (5%); every other
-//     line is GST + PST (12%).
+//     line (12% combined). Blinds, shutters, drapery hardware, and all installation
+//     are GST-only (5%).
 
 // RateComponent is one part of a combined rate (GST, HST, PST, or QST). Percent is
 // expressed in whole points, so 5 means 5%.
@@ -149,7 +147,7 @@ func isProductLine(lt LineType) bool {
 
 // Rate returns the combined rate (as a fraction, 0.13 = 13%) and its components
 // for a line in a province. Canada taxes every line, so found is true whenever the
-// province resolves. The BC and MB exceptions are applied here.
+// province resolves. The BC exception is applied here.
 func (c *CanadaRates) Rate(province string, category Category, lineType LineType) (rate float64, components []RateComponent, found bool) {
 	name, ok := c.ResolveProvince(province)
 	if !ok {
@@ -162,16 +160,11 @@ func (c *CanadaRates) Rate(province string, category Category, lineType LineType
 	switch name {
 	case "British Columbia":
 		// PST applies only to the Draperies and Workroom product line; everything
-		// else (blinds, shutters, all installation labor, consult fee) is GST-only.
+		// else (blinds, shutters, all installation labor) is GST-only.
 		if category == CategoryDraperies && isProductLine(lineType) {
 			return 0.12, []RateComponent{gst, pst}, true
 		}
 		return 0.05, []RateComponent{gst}, true
-	case "Manitoba":
-		if lineType == LineTypeConsultationFee {
-			return 0.05, []RateComponent{gst}, true
-		}
-		return 0.12, []RateComponent{gst, pst}, true
 	default:
 		// Defensive copy: p.Components is stored in CanadaRates.byName, so returning
 		// it directly would let a caller mutate shared state. (The BC/MB branches

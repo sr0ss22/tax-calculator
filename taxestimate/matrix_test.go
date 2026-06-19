@@ -11,15 +11,14 @@ func TestLoadMatrix(t *testing.T) {
 	if err != nil {
 		t.Fatalf("LoadMatrix() error = %v", err)
 	}
-	// The ported RLN matrix has 1352 unique (channel, state, product, order_type,
+	// The ported RLN matrix has 1248 unique (channel, state, product, order_type,
 	// line_type) rows. A drift here means the seed changed; if the change was
 	// intentional, update this number, otherwise investigate the regression.
-	// 2026-06-11 (RDIS-135): 1300 -> 1352. Added 52 THD Design Consultation Fee
-	// rows (one per state/locality). The THD chart has no consult-fee column, so
-	// taxability is derived from THD Additional Labor Services for the state and is
-	// pending SME confirmation.
-	if got := m.Len(); got != 1352 {
-		t.Errorf("Matrix.Len() = %d, want 1352 (update only if the seed change was intentional)", got)
+	// 2026-06-19 (RDIS-135): 1352 -> 1248. Removed the 104 Design Consultation Fee
+	// rows. The fee is seldom used and forced orders into the blended path; it was
+	// dropped from the calculator entirely.
+	if got := m.Len(); got != 1248 {
+		t.Errorf("Matrix.Len() = %d, want 1248 (update only if the seed change was intentional)", got)
 	}
 }
 
@@ -137,26 +136,29 @@ func TestMatrix_Taxable_PartnerChannel(t *testing.T) {
 	}
 }
 
-// TestMatrix_ConsultationFeeReachable documents that the synthetic Design
-// Consultation Fee rows exist in the seed (so the data is not lost) but are NOT
-// reachable through mapping table A. The calculation layer (task 4) owns wiring
-// a consultation-fee line to this category.
-func TestMatrix_ConsultationFeeReachable(t *testing.T) {
+// TestMatrix_NoConsultationFee documents that the Design Consultation Fee was
+// removed from the calculator (RDIS-135, 2026-06-19): no seed row carries that
+// product/line type and mapping table A never yields it. The fee was seldom used
+// and forced orders into the blended path.
+func TestMatrix_NoConsultationFee(t *testing.T) {
 	m, err := LoadMatrix()
 	if err != nil {
 		t.Fatalf("LoadMatrix() error = %v", err)
 	}
-	key := MatrixKey{
-		Channel:   ChannelPartners,
-		State:     "Alaska - Juneau",
-		Category:  CategoryDesignConsultationFee,
-		OrderType: OrderTypeJob,
-		LineType:  LineTypeConsultationFee,
+	// No combination resolves the old synthetic consultation-fee category/line type.
+	for _, channel := range []Channel{ChannelTHD, ChannelPartners} {
+		key := MatrixKey{
+			Channel:   channel,
+			State:     "Alaska - Juneau",
+			Category:  Category("Design Consultation Fee"),
+			OrderType: OrderTypeJob,
+			LineType:  LineType("Consultation Fee"),
+		}
+		if _, found := m.Taxable(key); found {
+			t.Errorf("Design Consultation Fee row %+v should have been removed from the matrix", key)
+		}
 	}
-	if _, found := m.Taxable(key); !found {
-		t.Errorf("Design Consultation Fee row %+v not found in matrix", key)
-	}
-	// Mapping table A must never yield the consultation-fee category.
+	// Mapping table A must never yield a consultation-fee category.
 	if _, ok := CategoryForClassification("Design Consultation Fee"); ok {
 		t.Errorf("CategoryForClassification should not map a consultation fee to a category")
 	}
