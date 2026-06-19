@@ -10,19 +10,13 @@ package taxestimate
 import "strings"
 
 // Category is a taxability product category. Every install line item maps to
-// one of the first three (Blinds, Shutters, Draperies) via its product
-// classification. CategoryDesignConsultationFee is a fourth, synthetic category
-// that exists in the seed matrix but is NOT produced by CategoryForClassification:
-// a design consultation fee is not an install product classification. The
-// calculation layer (task 4) owns the consultation-fee path; until then those
-// matrix rows are intentionally unreachable through mapping table A.
+// one of Blinds, Shutters, or Draperies via its product classification.
 type Category string
 
 const (
-	CategoryBlinds                Category = "Blinds"
-	CategoryShutters              Category = "Shutters"
-	CategoryDraperies             Category = "Draperies"
-	CategoryDesignConsultationFee Category = "Design Consultation Fee"
+	CategoryBlinds    Category = "Blinds"
+	CategoryShutters  Category = "Shutters"
+	CategoryDraperies Category = "Draperies"
 )
 
 // classificationToCategory is mapping table A: the install-work-order product

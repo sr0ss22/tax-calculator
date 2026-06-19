@@ -32,7 +32,6 @@ type Request struct {
 	State        string  `json:"state"`        // US state code/name, or Canadian province name/code
 	Zip          string  `json:"zip"`          // US ZIP (for TaxJar); ignored for Canada
 	RateOverride float64 `json:"rateOverride"` // optional US combined rate fraction (0.0825 = 8.25%)
-	MeasureFee   float64 `json:"measureFee"`   // optional measure / design consultation fee
 	Lines        []Line  `json:"lines"`
 }
 
@@ -40,7 +39,7 @@ type Request struct {
 type LineResult struct {
 	Name        string  `json:"name"`
 	Category    string  `json:"category"`
-	Kind        string  `json:"kind"` // "product", "install", or "consult"
+	Kind        string  `json:"kind"` // "product" or "install"
 	LineType    string  `json:"lineType"`
 	Amount      float64 `json:"amount"`
 	Found       bool    `json:"found"`
@@ -132,20 +131,17 @@ type builtLine struct {
 	input taxestimate.TaxLineInput
 	name  string
 	warn  string
-	kind  string // "product", "install", or "consult" (for display grouping)
+	kind  string // "product" or "install" (for display grouping)
 }
 
 // buildLines turns the request into calculator inputs. productLineType is the line
 // type for product lines (Installed Package for US, Product for Canada). A line is
-// a product, an install, or a consultation fee:
+// either a product or an install:
 //   - product -> the category's product taxability
 //   - install -> the category's Additional Labor Services taxability (install
 //     blinds, install shutters, and install draperies are taxed separately)
-//   - consult -> the Design Consultation Fee line (no category)
-//
-// The legacy MeasureFee field is still honored as a consultation line.
 func buildLines(req Request, productLineType taxestimate.LineType) ([]builtLine, error) {
-	out := make([]builtLine, 0, len(req.Lines)+1)
+	out := make([]builtLine, 0, len(req.Lines))
 
 	for i, l := range req.Lines {
 		name := strings.TrimSpace(l.Name)
@@ -159,11 +155,6 @@ func buildLines(req Request, productLineType taxestimate.LineType) ([]builtLine,
 		var input taxestimate.TaxLineInput
 		kind := "product"
 		switch strings.ToLower(strings.TrimSpace(l.Kind)) {
-		case "consult", "consultation", "fee":
-			// Consultation fee has its own category and line type; the category field
-			// is not used.
-			kind = "consult"
-			input = taxestimate.TaxLineInput{Category: taxestimate.CategoryDesignConsultationFee, OrderType: taxestimate.OrderTypeJob, LineType: taxestimate.LineTypeConsultationFee, Amount: l.Amount}
 		case "", "product", "install", "installation", "labor":
 			cat, ok := categoryFromString(l.Category)
 			if !ok {
@@ -176,18 +167,11 @@ func buildLines(req Request, productLineType taxestimate.LineType) ([]builtLine,
 			}
 			input = taxestimate.TaxLineInput{Category: cat, OrderType: taxestimate.OrderTypeJob, LineType: lineType, Amount: l.Amount}
 		default:
-			return nil, fmt.Errorf("line %d (%s): unknown kind %q (use product, install, or consult)", i+1, name, l.Kind)
+			return nil, fmt.Errorf("line %d (%s): unknown kind %q (use product or install)", i+1, name, l.Kind)
 		}
 		out = append(out, builtLine{input: input, name: name, kind: kind})
 	}
 
-	if req.MeasureFee > 0 {
-		out = append(out, builtLine{
-			input: taxestimate.TaxLineInput{Category: taxestimate.CategoryDesignConsultationFee, OrderType: taxestimate.OrderTypeJob, LineType: taxestimate.LineTypeConsultationFee, Amount: req.MeasureFee},
-			name:  "Measure / Design Consultation Fee",
-			kind:  "consult",
-		})
-	}
 	return out, nil
 }
 

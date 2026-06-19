@@ -4,8 +4,7 @@
     "taxability_source": "THD Window Tax Chart (eff. 2025-03-21) + Decorview/DirectBuy/Macy's/JCP chart (2024-03), transcribed in 2026-06-05_RLN_tax_docs_analysis.md",
     "rate_source": "Tax Foundation, State and Local Sales Tax Rates 2025; county/city combined rates verified 2025-2026",
     "disclaimer": "Taxability flags are authoritative from the channel tax charts. RATES are estimates: county-seed rows are verified point rates; all other localities fall back to the state population-weighted average combined rate. Production requires a rooftop tax API (Avalara/TaxJar) keyed to full address.",
-    "thd_design_consultation_fee": "DERIVED (not on THD chart): taxable where THD Additional Labor Services is taxable for the state; 32 taxable / 20 non-taxable. Pending SME confirmation (RDIS-135).",
-    "canada": "Province-level rate table from Canada Tax Chart 6.9.2026 (Costco/Decorview/DirectBuy). All lines taxable; BC drapery/workroom +PST; MB consult-fee GST-only. No address rate lookup."
+    "canada": "Province-level rate table from Canada Tax Chart 6.9.2026 (Costco/Decorview/DirectBuy). All lines taxable; BC drapery/workroom +PST. No address rate lookup."
   },
   "channels": ["THD", "Decorview/DirectBuy/Macy's/JCP"],
   "products": ["Blinds", "Shutters", "Draperies"],
@@ -5111,14 +5110,6 @@
     },
     {
       "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "Alabama",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
       "state": "Alaska - Anchorage",
       "product": "Blinds",
       "order_type": "Job",
@@ -5215,14 +5206,6 @@
     },
     {
       "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "Alaska - Anchorage",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
       "state": "Alaska - Juneau",
       "product": "Blinds",
       "order_type": "Job",
@@ -5315,14 +5298,6 @@
       "product": "Draperies",
       "order_type": "Service Order",
       "line_type": "Installation Labor",
-      "taxable": true
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "Alaska - Juneau",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
       "taxable": true
     },
     {
@@ -5423,14 +5398,6 @@
     },
     {
       "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "Arizona",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
       "state": "Arkansas",
       "product": "Blinds",
       "order_type": "Job",
@@ -5523,14 +5490,6 @@
       "product": "Draperies",
       "order_type": "Service Order",
       "line_type": "Installation Labor",
-      "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "Arkansas",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
       "taxable": false
     },
     {
@@ -5631,14 +5590,6 @@
     },
     {
       "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "California",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
       "state": "Colorado",
       "product": "Blinds",
       "order_type": "Job",
@@ -5731,14 +5682,6 @@
       "product": "Draperies",
       "order_type": "Service Order",
       "line_type": "Installation Labor",
-      "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "Colorado",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
       "taxable": false
     },
     {
@@ -5839,14 +5782,6 @@
     },
     {
       "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "Connecticut",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
       "state": "Delaware",
       "product": "Blinds",
       "order_type": "Job",
@@ -5939,14 +5874,6 @@
       "product": "Draperies",
       "order_type": "Service Order",
       "line_type": "Installation Labor",
-      "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "Delaware",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
       "taxable": false
     },
     {
@@ -6047,14 +5974,6 @@
     },
     {
       "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "District of Columbia",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": true
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
       "state": "Florida",
       "product": "Blinds",
       "order_type": "Job",
@@ -6151,14 +6070,6 @@
     },
     {
       "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "Florida",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
       "state": "Georgia",
       "product": "Blinds",
       "order_type": "Job",
@@ -6251,14 +6162,6 @@
       "product": "Draperies",
       "order_type": "Service Order",
       "line_type": "Installation Labor",
-      "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "Georgia",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
       "taxable": false
     },
     {
@@ -6359,14 +6262,6 @@
     },
     {
       "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "Hawaii",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": true
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
       "state": "Idaho",
       "product": "Blinds",
       "order_type": "Job",
@@ -6459,14 +6354,6 @@
       "product": "Draperies",
       "order_type": "Service Order",
       "line_type": "Installation Labor",
-      "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "Idaho",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
       "taxable": false
     },
     {
@@ -6567,14 +6454,6 @@
     },
     {
       "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "Illinois",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
       "state": "Indiana",
       "product": "Blinds",
       "order_type": "Job",
@@ -6667,14 +6546,6 @@
       "product": "Draperies",
       "order_type": "Service Order",
       "line_type": "Installation Labor",
-      "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "Indiana",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
       "taxable": false
     },
     {
@@ -6775,14 +6646,6 @@
     },
     {
       "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "Iowa",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": true
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
       "state": "Kansas",
       "product": "Blinds",
       "order_type": "Job",
@@ -6879,14 +6742,6 @@
     },
     {
       "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "Kansas",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
       "state": "Kentucky",
       "product": "Blinds",
       "order_type": "Job",
@@ -6979,14 +6834,6 @@
       "product": "Draperies",
       "order_type": "Service Order",
       "line_type": "Installation Labor",
-      "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "Kentucky",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
       "taxable": false
     },
     {
@@ -7087,14 +6934,6 @@
     },
     {
       "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "Louisiana",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
       "state": "Maine",
       "product": "Blinds",
       "order_type": "Job",
@@ -7187,14 +7026,6 @@
       "product": "Draperies",
       "order_type": "Service Order",
       "line_type": "Installation Labor",
-      "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "Maine",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
       "taxable": false
     },
     {
@@ -7295,14 +7126,6 @@
     },
     {
       "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "Maryland",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
       "state": "Massachusetts",
       "product": "Blinds",
       "order_type": "Job",
@@ -7395,14 +7218,6 @@
       "product": "Draperies",
       "order_type": "Service Order",
       "line_type": "Installation Labor",
-      "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "Massachusetts",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
       "taxable": false
     },
     {
@@ -7503,14 +7318,6 @@
     },
     {
       "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "Michigan",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
       "state": "Minnesota",
       "product": "Blinds",
       "order_type": "Job",
@@ -7604,14 +7411,6 @@
       "order_type": "Service Order",
       "line_type": "Installation Labor",
       "taxable": true
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "Minnesota",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false
     },
     {
       "channel": "Decorview/DirectBuy/Macy's/JCP",
@@ -7711,14 +7510,6 @@
     },
     {
       "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "Mississippi",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
       "state": "Missouri",
       "product": "Blinds",
       "order_type": "Job",
@@ -7811,14 +7602,6 @@
       "product": "Draperies",
       "order_type": "Service Order",
       "line_type": "Installation Labor",
-      "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "Missouri",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
       "taxable": false
     },
     {
@@ -7919,14 +7702,6 @@
     },
     {
       "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "Montana",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
       "state": "Nebraska",
       "product": "Blinds",
       "order_type": "Job",
@@ -8023,14 +7798,6 @@
     },
     {
       "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "Nebraska",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
       "state": "Nevada",
       "product": "Blinds",
       "order_type": "Job",
@@ -8123,14 +7890,6 @@
       "product": "Draperies",
       "order_type": "Service Order",
       "line_type": "Installation Labor",
-      "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "Nevada",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
       "taxable": false
     },
     {
@@ -8231,14 +7990,6 @@
     },
     {
       "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "New Hampshire",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
       "state": "New Jersey",
       "product": "Blinds",
       "order_type": "Job",
@@ -8335,14 +8086,6 @@
     },
     {
       "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "New Jersey",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
       "state": "New Mexico",
       "product": "Blinds",
       "order_type": "Job",
@@ -8435,14 +8178,6 @@
       "product": "Draperies",
       "order_type": "Service Order",
       "line_type": "Installation Labor",
-      "taxable": true
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "New Mexico",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
       "taxable": true
     },
     {
@@ -8543,14 +8278,6 @@
     },
     {
       "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "New York",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": true
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
       "state": "North Carolina",
       "product": "Blinds",
       "order_type": "Job",
@@ -8643,14 +8370,6 @@
       "product": "Draperies",
       "order_type": "Service Order",
       "line_type": "Installation Labor",
-      "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "North Carolina",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
       "taxable": false
     },
     {
@@ -8751,14 +8470,6 @@
     },
     {
       "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "North Dakota",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
       "state": "Ohio",
       "product": "Blinds",
       "order_type": "Job",
@@ -8855,14 +8566,6 @@
     },
     {
       "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "Ohio",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
       "state": "Oklahoma",
       "product": "Blinds",
       "order_type": "Job",
@@ -8955,14 +8658,6 @@
       "product": "Draperies",
       "order_type": "Service Order",
       "line_type": "Installation Labor",
-      "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "Oklahoma",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
       "taxable": false
     },
     {
@@ -9063,14 +8758,6 @@
     },
     {
       "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "Oregon",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
       "state": "Pennsylvania",
       "product": "Blinds",
       "order_type": "Job",
@@ -9167,14 +8854,6 @@
     },
     {
       "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "Pennsylvania",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
       "state": "Rhode Island",
       "product": "Blinds",
       "order_type": "Job",
@@ -9267,14 +8946,6 @@
       "product": "Draperies",
       "order_type": "Service Order",
       "line_type": "Installation Labor",
-      "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "Rhode Island",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
       "taxable": false
     },
     {
@@ -9375,14 +9046,6 @@
     },
     {
       "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "South Carolina",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
       "state": "South Dakota",
       "product": "Blinds",
       "order_type": "Job",
@@ -9475,14 +9138,6 @@
       "product": "Draperies",
       "order_type": "Service Order",
       "line_type": "Installation Labor",
-      "taxable": true
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "South Dakota",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
       "taxable": true
     },
     {
@@ -9583,14 +9238,6 @@
     },
     {
       "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "Tennessee",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
       "state": "Texas",
       "product": "Blinds",
       "order_type": "Job",
@@ -9683,14 +9330,6 @@
       "product": "Draperies",
       "order_type": "Service Order",
       "line_type": "Installation Labor",
-      "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "Texas",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
       "taxable": false
     },
     {
@@ -9791,14 +9430,6 @@
     },
     {
       "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "Utah",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
       "state": "Vermont",
       "product": "Blinds",
       "order_type": "Job",
@@ -9891,14 +9522,6 @@
       "product": "Draperies",
       "order_type": "Service Order",
       "line_type": "Installation Labor",
-      "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "Vermont",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
       "taxable": false
     },
     {
@@ -9999,14 +9622,6 @@
     },
     {
       "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "Virginia",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
       "state": "Washington",
       "product": "Blinds",
       "order_type": "Job",
@@ -10099,14 +9714,6 @@
       "product": "Draperies",
       "order_type": "Service Order",
       "line_type": "Installation Labor",
-      "taxable": true
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "Washington",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
       "taxable": true
     },
     {
@@ -10207,14 +9814,6 @@
     },
     {
       "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "West Virginia",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": true
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
       "state": "Wisconsin",
       "product": "Blinds",
       "order_type": "Job",
@@ -10311,14 +9910,6 @@
     },
     {
       "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "Wisconsin",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
       "state": "Wyoming",
       "product": "Blinds",
       "order_type": "Job",
@@ -10412,534 +10003,6 @@
       "order_type": "Service Order",
       "line_type": "Installation Labor",
       "taxable": false
-    },
-    {
-      "channel": "Decorview/DirectBuy/Macy's/JCP",
-      "state": "Wyoming",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false
-    },
-    {
-      "channel": "THD",
-      "state": "Alaska - Juneau",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": true,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "Alaska - Kenai",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": true,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "Alaska - Wasilla",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": true,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "Arizona",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": true,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "Arkansas",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "California",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "Colorado",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": true,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "Connecticut",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": true,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "Delaware",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "District of Columbia",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": true,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "Florida",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": true,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "Georgia",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": true,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "Hawaii",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": true,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "Idaho",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "Illinois",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": true,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "Indiana",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": true,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "Iowa",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": true,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "Kansas",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": true,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "Kentucky",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "Louisiana",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "Maine",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "Maryland",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": true,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "Massachusetts",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": true,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "Michigan",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": true,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "Minnesota",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": true,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "Mississippi",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": true,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "Missouri",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "Montana",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "Nebraska",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "Nevada",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "New Hampshire",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "New Jersey",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "New Mexico",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": true,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "New York",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": true,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "North Carolina",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": true,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "North Dakota",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "Ohio",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "Oklahoma",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": true,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "Oregon",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "Pennsylvania",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": true,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "Rhode Island",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": true,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "South Carolina",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": true,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "South Dakota",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": true,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "Tennessee",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "Texas",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": true,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "Utah",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": true,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "Vermont",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "Virginia",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "Washington",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": true,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "West Virginia",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": true,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "Wisconsin",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": true,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
-    },
-    {
-      "channel": "THD",
-      "state": "Wyoming",
-      "product": "Design Consultation Fee",
-      "order_type": "Job",
-      "line_type": "Consultation Fee",
-      "taxable": false,
-      "derived": true,
-      "note": "THD chart has no consult-fee column; taxability derived from THD Additional Labor Services for the state. Confirm with SME (RDIS-135 open Q)."
     }
   ],
   "state_rates": [
@@ -11357,8 +10420,7 @@
       "Blinds",
       "Shutters",
       "Draperies & Workroom",
-      "Drapery Hardware",
-      "Design Consultation Fee"
+      "Drapery Hardware"
     ],
     "line_types": ["Product", "Installation", "Warranty Service"],
     "provinces": [
@@ -11381,7 +10443,7 @@
           ["PST", 7.0]
         ],
         "combined": 12.0,
-        "note": "Design Consultation Fee is GST-only (5%); everything else GST+PST = 12%."
+        "note": "GST 5% + PST 7% = 12% on all lines."
       },
       {
         "name": "New Brunswick",
@@ -11441,7 +10503,7 @@
           ["PST", 6.0]
         ],
         "combined": 11.0,
-        "note": "GST 5% + PST 6% on all lines incl. consult fee."
+        "note": "GST 5% + PST 6% on all lines."
       },
       {
         "name": "Yukon Territory",
@@ -11450,7 +10512,7 @@
         "note": ""
       }
     ],
-    "exceptions": "BC: Draperies & Workroom Product line = 12% (GST+PST), all else 5%. MB: Design Consultation Fee = 5% (GST only), all else 12%.",
+    "exceptions": "BC: Draperies & Workroom Product line = 12% (GST+PST), all else 5%.",
     "source": "Costco/Decorview/DirectBuy Window Coverings — Canada chart, updated 2025-04-02 (KOM); file 'Canada Tax Chart 6.9.2026.pdf'."
   }
 }

@@ -79,9 +79,7 @@ func TestCanadaRates_Rate(t *testing.T) {
 		{"BC draperies product = 12", "British Columbia", CategoryDraperies, LineTypeProduct, 0.12, true},
 		{"BC blinds product = 5", "British Columbia", CategoryBlinds, LineTypeProduct, 0.05, true},
 		{"BC draperies labor = 5", "British Columbia", CategoryDraperies, LineTypeAdditionalLabor, 0.05, true},
-		{"BC consult = 5", "British Columbia", CategoryDesignConsultationFee, LineTypeConsultationFee, 0.05, true},
-		// Manitoba: consult fee GST only; everything else 12.
-		{"MB consult = 5", "Manitoba", CategoryDesignConsultationFee, LineTypeConsultationFee, 0.05, true},
+		// Manitoba: GST + PST = 12 on every line.
 		{"MB blinds product = 12", "Manitoba", CategoryBlinds, LineTypeProduct, 0.12, true},
 		{"MB install labor = 12", "Manitoba", CategoryBlinds, LineTypeAdditionalLabor, 0.12, true},
 		// Unknown province does not resolve.
@@ -108,18 +106,17 @@ func TestCanadaRates_Compute_Ontario(t *testing.T) {
 	lines := []TaxLineInput{
 		{Category: CategoryBlinds, OrderType: OrderTypeJob, LineType: LineTypeProduct, Amount: 1000},
 		{Category: CategoryBlinds, OrderType: OrderTypeJob, LineType: LineTypeAdditionalLabor, Amount: 200},
-		{Category: CategoryDesignConsultationFee, OrderType: OrderTypeJob, LineType: LineTypeConsultationFee, Amount: 100},
 	}
 	got := c.Compute("Ontario", lines)
 	// Ontario taxes everything at 13%.
-	if !approxEqCA(got.Retail, 1300) {
-		t.Errorf("Retail = %v, want 1300", got.Retail)
+	if !approxEqCA(got.Retail, 1200) {
+		t.Errorf("Retail = %v, want 1200", got.Retail)
 	}
-	if !approxEqCA(got.TaxableBase, 1300) {
-		t.Errorf("TaxableBase = %v, want 1300 (Canada taxes every line)", got.TaxableBase)
+	if !approxEqCA(got.TaxableBase, 1200) {
+		t.Errorf("TaxableBase = %v, want 1200 (Canada taxes every line)", got.TaxableBase)
 	}
-	if !approxEqCA(got.TotalTax, 169) { // 1300 * 0.13
-		t.Errorf("TotalTax = %v, want 169", got.TotalTax)
+	if !approxEqCA(got.TotalTax, 156) { // 1200 * 0.13
+		t.Errorf("TotalTax = %v, want 156", got.TotalTax)
 	}
 	if got.HasUnmapped {
 		t.Errorf("HasUnmapped = true, want false (every Ontario line resolves)")

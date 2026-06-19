@@ -180,31 +180,18 @@ func TestEstimate_PerCategoryInstall_Illinois(t *testing.T) {
 	}
 }
 
-func TestEstimate_ConsultationLine(t *testing.T) {
-	// A consultation-fee line maps to the Design Consultation Fee line type and
-	// ignores the category. New York (partner) taxes the consultation fee.
+func TestEstimate_ConsultationLineRejected(t *testing.T) {
+	// The Design Consultation Fee was removed (RDIS-135): a "consult" line is no
+	// longer a recognized kind and is rejected like any other unknown kind.
 	e := newEstimator(t)
-	got, err := e.Estimate(context.Background(), Request{
+	_, err := e.Estimate(context.Background(), Request{
 		Channel:      "partners",
 		State:        "New York",
 		RateOverride: 0.08,
 		Lines:        []Line{{Name: "Design consultation", Kind: "consult", Amount: 100}},
 	})
-	if err != nil {
-		t.Fatalf("Estimate() error = %v", err)
-	}
-	if len(got.Lines) != 1 {
-		t.Fatalf("got %d lines, want 1", len(got.Lines))
-	}
-	l := got.Lines[0]
-	if l.LineType != "Consultation Fee" {
-		t.Errorf("lineType = %q, want Consultation Fee", l.LineType)
-	}
-	if !l.Taxable {
-		t.Errorf("NY consultation fee should be taxable")
-	}
-	if !approxEq(got.TotalTax, 8) {
-		t.Errorf("TotalTax = %v, want 8 (100 * 0.08)", got.TotalTax)
+	if err == nil {
+		t.Errorf("Estimate() error = nil, want an error for the removed consult kind")
 	}
 }
 

@@ -116,21 +116,6 @@
   .blend svg,.notes svg{width:15px;height:15px;flex:none;margin-top:1px}
   .notes ul{margin:4px 0 0;padding-left:16px}
   .placeholder{color:var(--muted);font-size:13px;text-align:center;padding:24px 8px}
-  /* consult line (no toggles — just a label) */
-  .consultLabel{display:inline-flex;align-items:center;gap:7px;padding:8px 0;color:var(--ink);font-weight:600;white-space:nowrap}
-  .consultLabel svg{width:16px;height:16px;color:var(--orange)}
-  /* add-line modal */
-  .modal-overlay{position:fixed;inset:0;background:rgba(16,18,22,.45);display:none;align-items:center;justify-content:center;z-index:50}
-  .modal-overlay.open{display:flex}
-  .modal{background:#fff;border-radius:14px;padding:22px;width:min(440px,92vw);box-shadow:0 16px 48px rgba(0,0,0,.22)}
-  .modal h3{margin:0 0 4px;font-size:16px;font-weight:700}
-  .modal p{margin:0 0 16px;color:var(--muted);font-size:13px}
-  .typegrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .typecard{display:flex;flex-direction:column;align-items:center;gap:9px;padding:18px 10px;border:1px solid #d4d7dc;border-radius:11px;background:#fff;cursor:pointer;font-weight:600;font-size:13px;color:#2a2e35}
-  .typecard svg{width:24px;height:24px;color:var(--orange)}
-  .typecard:hover{border-color:var(--orange);background:#fff7f3}
-  .typecard:disabled{opacity:.4;cursor:not-allowed}
-  .typecard:disabled:hover{border-color:#d4d7dc;background:#fff}
   /* product line groups */
   .lineGroup{margin-bottom:10px}
   /* Product Amount + Install Amount sit together at the right (stack on mobile). */
@@ -183,8 +168,7 @@
     /* Stack each line's fields vertically instead of wrapping, tightly. */
     .lineRow{flex-direction:column;align-items:stretch;gap:10px;padding:12px}
     .lineGroup{margin-bottom:8px}
-    /* In the column layout, reset flex-grow so fields don't stretch vertically
-       (the consult Work Type field was creating a tall dead gap). */
+    /* In the column layout, reset flex-grow so fields don't stretch vertically. */
     .lineRow .fld{width:100%;flex:0 0 auto}
     .lineRow .fld.amt{margin-left:0}
     .lamt,.lname,.fld.name{width:100%}
@@ -235,9 +219,9 @@
 
     <div class="card">
       <h2><i data-lucide="layers"></i>Lines</h2>
-      <p class="hint" style="margin:0 0 12px">Add a product line per window-covering category and enter its <b>Product Amount</b>. With <b>Install: RLN</b> each line also shows an <b>Install Amount</b> for its labor; with <b>Install: Self</b> that field is hidden and no install is taxed. A Design Consultation can be added once as its own line.</p>
+      <p class="hint" style="margin:0 0 12px">Add a product line per window-covering category and enter its <b>Product Amount</b>. With <b>Install: RLN</b> each line also shows an <b>Install Amount</b> for its labor; with <b>Install: Self</b> that field is hidden and no install is taxed.</p>
       <div id="lines"></div>
-      <button type="button" class="btn-sec" onclick="openTypeModal()"><i data-lucide="plus"></i>Add line</button>
+      <button type="button" class="btn-sec" onclick="addProductLine('blinds',null,null)"><i data-lucide="plus"></i>Add line</button>
     </div>
   </div>
 
@@ -263,17 +247,6 @@
     <span class="mb-val" id="mbRate">&mdash;</span>
   </div>
   <button type="button" class="btn-primary mb-btn" onclick="openSheet()"><i data-lucide="receipt-text"></i>Tax Summary</button>
-</div>
-
-<div class="modal-overlay" id="typeModal" onclick="if(event.target===this)closeTypeModal()">
-  <div class="modal" role="dialog" aria-modal="true" aria-label="Add a line">
-    <h3>Add a line</h3>
-    <p>What kind of line do you want to add?</p>
-    <div class="typegrid">
-      <button type="button" class="typecard" data-type="product" onclick="chooseType('product')"><i data-lucide="package"></i>Product</button>
-      <button type="button" class="typecard" data-type="consult" onclick="chooseType('consult')"><i data-lucide="swatch-book"></i>Consultation</button>
-    </div>
-  </div>
 </div>
 
 <script>
@@ -361,7 +334,6 @@ function isRLN(){var a=document.querySelector('#install .tog.active');return !!a
 // lineName derives a display name from the work type and product type, since there
 // is no free-text name field.
 function lineName(kind,cat){
-  if(kind==='consult') return 'Design Consultation';
   var L={blinds:'Blinds',shutters:'Shutters',draperies:'Drapery'};
   var base=L[cat]||cat;
   return kind==='install'?('Install '+base):base;
@@ -385,35 +357,9 @@ function addProductLine(cat,prodAmt,instAmt){
   icons();
   return g;
 }
-function addConsultLine(amt){
-  var g=document.createElement('div');g.className='lineGroup';g.dataset.kind='consult';
-  g.innerHTML='<div class="lineRow consultRow">'+
-      '<div class="fld name"><span class="cap">Work Type</span><span class="consultLabel">'+iconHTML('swatch-book')+'<span>Design Consultation</span></span></div>'+
-      '<div class="fld amt"><span class="cap">Amount</span><input class="lamt" type="number" step="0.01" placeholder="0.00" value="'+(amt!=null?amt:'')+'"></div>'+
-      rmBtn+
-    '</div>';
-  document.getElementById('lines').appendChild(g);
-  icons();
-  return g;
-}
 // Show/hide the Install Amount field on every product line per the Install toggle.
 function syncInstalls(){
   document.getElementById('lines').classList.toggle('selfInstall', !isRLN());
-}
-function hasConsult(){return !!document.querySelector('#lines > .lineGroup[data-kind="consult"]');}
-function openTypeModal(){
-  var m=document.getElementById('typeModal');
-  var cbtn=m.querySelector('[data-type="consult"]');
-  var taken=hasConsult();
-  cbtn.disabled=taken;
-  cbtn.title=taken?'A consultation line is already added':'';
-  m.classList.add('open');
-}
-function closeTypeModal(){document.getElementById('typeModal').classList.remove('open');}
-function chooseType(kind){
-  if(kind==='consult'&&hasConsult())return;
-  closeTypeModal();
-  if(kind==='consult') addConsultLine(null); else addProductLine('blinds',null,null);
 }
 // Mirror the headline rate into the sticky mobile bar (no-op on desktop).
 function setMobileRate(val,label){
@@ -428,11 +374,6 @@ function pct(r){return ((r||0)*100).toFixed(3)+'%'}
 function collect(){
   var lines=[];
   document.querySelectorAll('#lines > .lineGroup').forEach(function(g){
-    if(g.dataset.kind==='consult'){
-      var camt=parseFloat(g.querySelector('.lamt').value);
-      if(!isNaN(camt)) lines.push({name:lineName('consult',''),category:'',kind:'consult',amount:camt});
-      return;
-    }
     var cat=activeCat(g);
     var pamt=parseFloat(g.querySelector('.prodAmt').value);
     if(!isNaN(pamt)) lines.push({name:lineName('product',cat),category:cat,kind:'product',amount:pamt});
@@ -491,20 +432,19 @@ function show(d){
       '<div class="bh-sub">Enter this rate into the order system'+(d.rateOverridden?' (manual override)':'')+'</div></div>';
   }
   var lines=(d.lines||[]).map(function(l){
-    // Product lines use the category icon; install uses drill; consult uses the design icon.
-    var ic=l.kind==='install'?'drill':(l.kind==='consult'?'swatch-book':catIcon(l.category));
+    // Product lines use the category icon; install uses drill.
+    var ic=l.kind==='install'?'drill':catIcon(l.category);
     var sub=(l.category||'-')+(l.taxable?(' &middot; '+pct(l.appliedRate)):'');
     return '<div class="srow"><div class="srow-l">'+iconHTML(ic)+
       '<div><div class="snm">'+(l.name||'-')+pillFor(l)+'</div><div class="ssub">'+sub+'</div></div></div>'+
       '<div class="sright"><div class="samt">'+fmt(l.amount)+'</div><div class="stax">'+fmt(l.tax)+'</div></div></div>';
   }).join('');
-  // Tax broken out by line kind (product / install / consult).
-  var byKind={product:0,install:0,consult:0},seen={product:false,install:false,consult:false};
+  // Tax broken out by line kind (product / install).
+  var byKind={product:0,install:0},seen={product:false,install:false};
   (d.lines||[]).forEach(function(l){if(l.kind in byKind){byKind[l.kind]+=(l.tax||0);seen[l.kind]=true;}});
   var breakout='';
   if(seen.product) breakout+='<div class="tr sub"><span>'+iconHTML('blinds')+'Product tax</span><span>'+fmt(byKind.product)+'</span></div>';
   if(seen.install) breakout+='<div class="tr sub"><span>'+iconHTML('drill')+'Installation tax</span><span>'+fmt(byKind.install)+'</span></div>';
-  if(seen.consult) breakout+='<div class="tr sub"><span>'+iconHTML('swatch-book')+'Consultation tax</span><span>'+fmt(byKind.consult)+'</span></div>';
   // Targeted caution: only when the ZIP-table rate includes a city-level tax,
   // which can be wrong if the address sits just outside the city limit (e.g. 55430).
   var note='';
@@ -546,7 +486,6 @@ async function run(){
 populateStates();
 addProductLine('draperies',1500,500);
 addProductLine('blinds',1000,500);
-addConsultLine(150);
 icons();
 // Auto-recalculate as the user types in any amount, the ZIP, or the rate override.
 document.addEventListener('input',function(e){

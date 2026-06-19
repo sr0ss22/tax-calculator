@@ -27,8 +27,7 @@ const (
 // LineType is a line type as it appears in the taxability matrix. The matrix
 // pairs specific line types with each order type: a Job carries an Installed
 // Package or Additional Labor Services; a Service Order carries a Product or
-// Installation Labor; the synthetic Design Consultation Fee carries a
-// Consultation Fee. The calculation layer (task 4) maps quote line items onto
+// Installation Labor. The calculation layer (task 4) maps quote line items onto
 // these values.
 type LineType string
 
@@ -37,7 +36,6 @@ const (
 	LineTypeAdditionalLabor   LineType = "Additional Labor Services"
 	LineTypeProduct           LineType = "Product"
 	LineTypeInstallationLabor LineType = "Installation Labor"
-	LineTypeConsultationFee   LineType = "Consultation Fee"
 )
 
 // matrixRow is one row of the taxability matrix: a (channel, state, product,
@@ -45,9 +43,9 @@ const (
 type matrixRow struct {
 	Channel string `json:"channel"`
 	State   string `json:"state"`
-	// Product holds a taxability Category value (Blinds, Shutters, Draperies, or
-	// the synthetic Design Consultation Fee). It is named "product" in the seed
-	// for historical reasons; it is not a SKU or SAP product_type.
+	// Product holds a taxability Category value (Blinds, Shutters, or Draperies).
+	// It is named "product" in the seed for historical reasons; it is not a SKU or
+	// SAP product_type.
 	Product   string `json:"product"`
 	OrderType string `json:"order_type"`
 	LineType  string `json:"line_type"`
@@ -133,14 +131,10 @@ func LoadMatrix() (*Matrix, error) {
 }
 
 // knownCategories is the set of category values the matrix is allowed to carry.
-// It includes the synthetic Design Consultation Fee category, which exists in
-// the seed but is not produced by mapping table A (CategoryForClassification);
-// the calculation layer (task 4) owns the consultation-fee path.
 var knownCategories = map[Category]bool{
-	CategoryBlinds:                true,
-	CategoryShutters:              true,
-	CategoryDraperies:             true,
-	CategoryDesignConsultationFee: true,
+	CategoryBlinds:    true,
+	CategoryShutters:  true,
+	CategoryDraperies: true,
 }
 
 // knownChannels, knownOrderTypes, and knownLineTypes are the value sets the seed
@@ -164,7 +158,6 @@ var knownLineTypes = map[LineType]bool{
 	LineTypeAdditionalLabor:   true,
 	LineTypeProduct:           true,
 	LineTypeInstallationLabor: true,
-	LineTypeConsultationFee:   true,
 }
 
 // loadMatrix parses raw seed bytes into an indexed matrix. It fails loudly so a
