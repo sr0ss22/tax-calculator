@@ -72,6 +72,11 @@
   .resulthead{display:flex;align-items:center;gap:8px;margin-bottom:8px}
   .resulthead svg{width:17px;height:17px;color:var(--orange)}
   .resulthead .loc{font-weight:700;font-size:15px}
+  /* Subtle "live recalculating" cue, since there is no Estimate button. */
+  .updating{font-size:11px;font-weight:600;color:var(--muted);display:inline-flex;align-items:center;gap:5px;opacity:.85}
+  .updating::before{content:"";width:8px;height:8px;border-radius:50%;border:1.5px solid var(--muted);border-top-color:transparent;animation:spin .7s linear infinite}
+  .updating[hidden]{display:none}
+  @keyframes spin{to{transform:rotate(360deg)}}
   .rateOv{margin-left:auto;display:flex;flex-direction:row;align-items:center;gap:6px;font-size:11px;font-weight:600;color:#6b7280}
   .rateOv input{width:88px;padding:6px 8px;font-size:12.5px}
   .ratebadge{font-size:12.5px;color:#3a3f48;background:#f1f2f4;border-radius:999px;padding:4px 12px;font-weight:600;display:inline-block;margin-bottom:10px}
@@ -137,7 +142,6 @@
       transform:translateY(110%);transition:transform .3s ease;z-index:60;overflow-y:auto;overscroll-behavior:contain}
     .right.open{transform:translateY(0)}
     .right .card{margin-bottom:0}
-    .right > .btn-primary{display:none}
     .sheet-x{display:flex;position:sticky;top:10px;margin:10px 0 0 auto;align-items:center;justify-content:center;
       width:36px;height:36px;border:0;border-radius:50%;background:#fff;color:var(--ink);font-size:22px;line-height:0;
       box-shadow:0 1px 5px rgba(0,0,0,.18);z-index:2}
@@ -219,7 +223,7 @@
 
     <div class="card">
       <h2><i data-lucide="layers"></i>Lines</h2>
-      <p class="hint" style="margin:0 0 12px">Add a product line per window-covering category and enter its <b>Product Amount</b>. With <b>Install: RLN</b> each line also shows an <b>Install Amount</b> for its labor; with <b>Install: Self</b> that field is hidden and no install is taxed.</p>
+      <p class="hint" style="margin:0 0 12px">Add one product line for each type of window covering and enter its <b>Product Amount</b>. When <b>Install</b> is set to <b>RLN</b>, each line also has an <b>Install Amount</b> for labor. Set it to <b>Self</b> to hide that field &mdash; self-installed labor isn't taxed.</p>
       <div id="lines"></div>
       <button type="button" class="btn-sec" onclick="addProductLine('blinds',null,null)"><i data-lucide="plus"></i>Add line</button>
     </div>
@@ -231,11 +235,11 @@
       <div class="resulthead">
         <i data-lucide="receipt-text"></i>
         <span class="loc" id="sumLoc">Estimate</span>
+        <span class="updating" id="updFlag" hidden>Updating…</span>
         <label class="rateOv">Rate override %<input id="rate" type="number" step="0.001" placeholder="e.g. 7.5"></label>
       </div>
-      <div id="lineOut"><p class="placeholder">Add lines, then estimate.</p></div>
+      <div id="lineOut"><p class="placeholder">Enter an amount to estimate.</p></div>
     </div>
-    <button class="btn-primary" onclick="run()"><i data-lucide="calculator"></i>Estimate tax</button>
   </div>
 </div>
 </div>
@@ -461,31 +465,48 @@ function show(d){
   icons();
 }
 // Debounced auto-recalc: every input/toggle change schedules a run; typing
-// coalesces so it's not a request per keystroke.
+// coalesces so it's not a request per keystroke. There is no Estimate button —
+// the result panel updates live, with a small "Updating…" cue while in flight.
 var _runTimer, _runSeq=0;
 function scheduleRun(){clearTimeout(_runTimer);_runTimer=setTimeout(run,300);}
+function setBusy(on){var f=document.getElementById('updFlag');if(f)f.hidden=!on;}
+function showPrompt(msg){
+  setBusy(false);
+  setMobileRate('—','Applied rate');
+  document.getElementById('lineOut').innerHTML='<p class="placeholder">'+msg+'</p>';
+}
 async function run(){
   clearTimeout(_runTimer);
   if(!document.getElementById('state').value){
-    setMobileRate('—','Applied rate');
-    document.getElementById('lineOut').innerHTML='<p class="placeholder">Pick a state or province to estimate.</p>';
+    showPrompt('Pick a state or province to estimate.');
+    return;
+  }
+  var payload=collect();
+  // Nothing to estimate until at least one product/install amount is entered;
+  // show a prompt instead of calling the API (which requires a line).
+  if(payload.lines.length===0){
+    showPrompt('Enter an amount to estimate.');
     return;
   }
   var seq=++_runSeq;
+  setBusy(true);
   try{
-    var res=await fetch('/api/estimate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(collect())});
+    var res=await fetch('/api/estimate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     var data=await res.json();
-    if(seq!==_runSeq) return; // a newer change superseded this response
+    if(seq!==_runSeq) return; // a newer change superseded this response; it owns the cue
+    setBusy(false);
     show(data);
   }catch(err){
     if(seq!==_runSeq) return;
+    setBusy(false);
     document.getElementById('lineOut').innerHTML='<div class="notes"><i data-lucide="alert-triangle"></i><span>'+err+'</span></div>';icons();
   }
 }
-// Build the page, then estimate the seeded example.
+// Build the page with two empty starter lines — no defaulted amounts, so the
+// estimate stays blank until the rep enters real figures.
 populateStates();
-addProductLine('draperies',1500,500);
-addProductLine('blinds',1000,500);
+addProductLine('draperies');
+addProductLine('blinds');
 icons();
 // Auto-recalculate as the user types in any amount, the ZIP, or the rate override.
 document.addEventListener('input',function(e){
