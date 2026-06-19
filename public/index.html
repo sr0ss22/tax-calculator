@@ -35,6 +35,13 @@
   label{display:flex;flex-direction:column;gap:5px;font-size:12.5px;font-weight:500;color:#3a3f48}
   .fldcol{display:flex;flex-direction:column;gap:5px}
   .fldlbl{font-size:12.5px;font-weight:500;color:#3a3f48}
+  /* Label with an inline info button (hover on desktop, tap/focus on mobile). */
+  .lblrow{display:inline-flex;align-items:center;gap:5px}
+  .infobtn{position:relative;display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;padding:0;border:0;border-radius:50%;background:#c4c8ce;color:#fff;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .infobtn svg{width:10px;height:10px}
+  .infobtn:hover,.infobtn:focus{background:var(--orange);outline:none}
+  .infobtn[data-tip]:hover::after,.infobtn[data-tip]:focus::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 8px);left:0;width:max-content;max-width:210px;white-space:normal;text-align:left;line-height:1.4;background:#15161a;color:#fff;font-size:11px;font-weight:600;padding:7px 10px;border-radius:7px;box-shadow:0 4px 14px rgba(0,0,0,.22);z-index:30;pointer-events:none}
+  .infobtn[data-tip]:hover::before,.infobtn[data-tip]:focus::before{content:"";position:absolute;bottom:calc(100% + 3px);left:4px;border:5px solid transparent;border-top-color:#15161a;z-index:30;pointer-events:none}
   .zipin{width:84px}
   input,select{font:inherit;padding:9px 11px;border:1px solid #d4d7dc;border-radius:9px;background:#fff;color:var(--ink)}
   input:focus,select:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 3px rgba(251,94,30,.15)}
@@ -212,7 +219,7 @@
             <button type="button" class="tog" data-val="partners" onclick="pickTog(this)"><i data-lucide="store"></i>Other</button>
           </div>
         </div>
-        <div class="fldcol"><span class="fldlbl">Install</span>
+        <div class="fldcol"><span class="fldlbl lblrow">Install<button type="button" class="infobtn" aria-label="About Install options" data-tip="Self Install is rare and must be pre-approved by support."><i data-lucide="info"></i></button></span>
           <div class="seg" id="install">
             <button type="button" class="tog active" data-val="RLN" onclick="pickInstall(this)"><i data-lucide="hard-hat"></i>RLN</button>
             <button type="button" class="tog" data-val="self" onclick="pickInstall(this)"><i data-lucide="user"></i>Self</button>
