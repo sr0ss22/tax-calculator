@@ -16,8 +16,8 @@
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif}
   .topbar{background:var(--header);color:#fff;padding:14px 22px;display:flex;align-items:center;gap:14px}
-  .logo{width:18px;height:18px;border-radius:4px;background:linear-gradient(135deg,#ff7a18,#e0341d);transform:rotate(45deg)}
-  .brand{font-weight:700;letter-spacing:.3px}
+  .britemark{width:21px;height:21px;display:block;flex:none}
+  .brand{font-weight:700;letter-spacing:.3px;font-size:18px}
   .topbar .divider{width:1px;height:20px;background:#3a3c42}
   .topbar h1{font-size:15px;font-weight:600;margin:0;color:#e9eaec}
   .topbar .subtitle{color:#9da1a8;font-size:12.5px;border-left:1px solid #3a3c42;padding-left:14px}
@@ -206,9 +206,9 @@
 </head>
 <body>
 <header class="topbar">
-  <span class="logo"></span><span class="brand">brite</span>
+  <span class="brand">Brite</span><svg class="britemark" viewBox="0 0 29 29" xmlns="http://www.w3.org/2000/svg" aria-label="Brite" role="img"><path d="M28.7912 13.6951C21.6277 12.3654 16.9497 7.68977 15.6199 0.52383C15.3554 0.509532 15.0861 0.5 14.8168 0.5H14.8144C14.5451 0.5 14.2759 0.509532 14.0089 0.52383C12.6792 7.68739 8.00118 12.3654 0.837629 13.6951C0.797117 14.4077 0.809032 14.8176 0.837629 15.3061C8.00118 16.6359 12.6792 21.3115 14.0089 28.4774C14.5594 28.5084 15.1004 28.506 15.6175 28.4774C16.9473 21.3139 21.6253 16.6359 28.7888 15.3061C28.8246 14.6865 28.8151 14.1575 28.7888 13.6951H28.7912Z" fill="#F37021"/></svg>
   <span class="divider"></span>
-  <h1>Quote Tax Estimate</h1>
+  <h1>Quote Tax Estimator</h1>
   <span class="subtitle">Estimate sales tax for a quote. Pick a location and channel, then add lines.</span>
   <a class="navlink" href="/resources.html"><i data-lucide="library-big"></i>Tax Resources</a>
   <span class="tag">Estimate only</span>
