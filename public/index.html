@@ -519,10 +519,9 @@ async function run(){
     document.getElementById('lineOut').innerHTML='<div class="notes"><i data-lucide="alert-triangle"></i><span>'+err+'</span></div>';icons();
   }
 }
-// Build the page with two empty starter lines — no defaulted amounts, so the
-// estimate stays blank until the rep enters real figures.
+// Build the page with one empty starter line (Blinds/Shades) — no defaulted
+// amounts, so the estimate stays blank until the rep enters real figures.
 populateStates();
-addProductLine('draperies');
 addProductLine('blinds');
 icons();
 // Auto-recalculate as the user types in any amount, the ZIP, or the rate override.
