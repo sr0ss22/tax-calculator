@@ -105,38 +105,20 @@
     <a class="hero h-state" href="#state-lookups">
       <span class="ic"><i data-lucide="map-pinned"></i></span>
       <h3>State Rate Lookups</h3>
-      <p>Official state revenue-department lookups for the exact local rate by address — all 50 states + DC.</p>
+      <p>Official state lookups for the exact local sales-tax rate by address.</p>
       <span class="go">Find a rate <i data-lucide="arrow-right"></i></span>
     </a>
-    <a class="hero h-thd" href="#thd-chart">
+    <a class="hero h-thd" href="#taxability">
       <span class="ic"><i data-lucide="house"></i></span>
-      <h3>THD Window Tax Chart</h3>
-      <p>Home Depot taxability matrix — what's taxable by state, product, and order type.</p>
-      <span class="go">View chart <i data-lucide="arrow-right"></i></span>
+      <h3>What's Taxable</h3>
+      <p>Whether blinds, shutters, and draperies are taxed — and why the channel matters.</p>
+      <span class="go">Check taxability <i data-lucide="arrow-right"></i></span>
     </a>
-    <a class="hero h-chan" href="#channel-chart">
-      <span class="ic"><i data-lucide="store"></i></span>
-      <h3>Channel Tax Chart</h3>
-      <p>Decorview / Macy's / DirectBuy / JCPenney taxability — different rules than THD.</p>
-      <span class="go">View chart <i data-lucide="arrow-right"></i></span>
-    </a>
-    <a class="hero h-ca" href="#canada">
-      <span class="ic"><i data-lucide="leaf"></i></span>
-      <h3>Canada Tax Rates</h3>
-      <p>Static province GST/HST/PST rates, including the BC drapery exception.</p>
-      <span class="go">View rates <i data-lucide="arrow-right"></i></span>
-    </a>
-    <a class="hero h-blend" href="#blended">
-      <span class="ic"><i data-lucide="scale"></i></span>
-      <h3>Blended Tax Guide</h3>
-      <p>When a THD job mixes blinds + shutters — how the single weighted rate is figured.</p>
-      <span class="go">How it works <i data-lucide="arrow-right"></i></span>
-    </a>
-    <a class="hero h-how" href="#howto">
-      <span class="ic"><i data-lucide="list-checks"></i></span>
-      <h3>Download Rates: How-To</h3>
-      <p>The step-by-step for finding and entering a tax rate on a quote in Salesforce.</p>
-      <span class="go">See the steps <i data-lucide="arrow-right"></i></span>
+    <a class="hero h-calc" href="/">
+      <span class="ic"><i data-lucide="calculator"></i></span>
+      <h3>Tax Estimator</h3>
+      <p>Estimate sales tax for a quote — the rate and any blended case are worked out for you.</p>
+      <span class="go">Open the calculator <i data-lucide="arrow-right"></i></span>
     </a>
   </div>
 
@@ -149,77 +131,24 @@
       <input id="stateSearch" type="text" placeholder="Filter states…" autocomplete="off">
     </div>
     <div class="states" id="stateList"></div>
-    <div class="note"><i data-lucide="info"></i><span><b>Alaska</b> has no statewide tax — rate is by locality (Anchorage, Juneau, Kenai, Wasilla). <b>Georgia</b> rate varies by county. <b>Delaware, Montana, New Hampshire, Oregon</b> have no sales tax.</span></div>
+    <div class="note"><i data-lucide="info"></i><span><b>Alaska</b> — rate is by locality. <b>Georgia</b> — varies by county. <b>Delaware, Montana, New Hampshire, Oregon</b> — no sales tax.</span></div>
   </section>
 
-  <!-- THD CHART -->
-  <section class="section" id="thd-chart">
-    <h2><i data-lucide="house"></i>THD Window Tax Chart<span class="badge eff">Effective 2025-03-21</span></h2>
-    <p class="meta">Home Depot taxability matrix used for RLN quotes through the THD channel.</p>
-    <p>The chart flags <b>taxability</b> (yes/no), not rates — the rate comes from the state lookup above. THD's model taxes the <b>installed package</b> (product + install labor) as a unit, so within a product category the flags almost always move together (all taxable or all exempt).</p>
+  <!-- TAXABILITY -->
+  <section class="section" id="taxability">
+    <h2><i data-lucide="house"></i>What's Taxable</h2>
+    <p class="meta">Taxability depends on the state, the product, and the channel. The calculator already flags each line as Taxable or Exempt — this is the quick reference.</p>
     <ul>
-      <li><b>Blinds &amp; Draperies</b> are taxable in most tax states; <b>Shutters</b> are frequently exempt (treated as a real-property improvement) — that mismatch is what triggers blended tax.</li>
-      <li><b>Iowa</b> is the systematic exception: labor taxable, product not.</li>
-      <li><b>District of Columbia:</b> Blinds &amp; Draperies taxable; Shutters not applicable.</li>
-      <li>No-tax states: Delaware, Montana, New Hampshire, Oregon (plus Alaska = local only).</li>
+      <li><b>Blinds &amp; draperies</b> are taxable in most states that have a sales tax.</li>
+      <li><b>Shutters</b> are exempt in many states (often treated as a real-property improvement).</li>
+      <li><b>Channel matters:</b> Home Depot and the other channels (Decorview / Macy's / DirectBuy / JCPenney) are taxed differently in some states — pick the right channel in the calculator so the flags match.</li>
+      <li><b>Blended rate:</b> when a job mixes taxable and exempt products (e.g. blinds&nbsp;+&nbsp;shutters), the calculator blends them into one rate for you — nothing to figure by hand.</li>
     </ul>
-    <div class="note warn"><i data-lucide="triangle-alert"></i><span>This is a maintained artifact (last reissued 2025-03-21). Always confirm against the current chart in Salesforce → <b>Designer Links → Tax Rates - THD Sales</b> before relying on it.</span></div>
+    <div class="note"><i data-lucide="info"></i><span><b>Canada:</b> province rates (GST/HST/PST) are applied automatically — no lookup needed. In BC, draperies are taxed higher than blinds and shutters.</span></div>
     <a class="backtop" href="#top"><i data-lucide="arrow-up"></i>Back to top</a>
   </section>
 
-  <!-- CHANNEL CHART -->
-  <section class="section" id="channel-chart">
-    <h2><i data-lucide="store"></i>Channel Tax Chart<span class="badge eff">Updated 2024-03</span></h2>
-    <p class="meta">Decorview / Macy's / DirectBuy / JCPenney taxability matrix.</p>
-    <p>The non-THD channels use a different model: they distinguish <b>product-taxable</b> from <b>install-labor-taxable</b> per state (commonly product&nbsp;Yes / install&nbsp;No). Install labor is taxable in only ~17 states here, versus ~30 jurisdictions for THD. Several states flip between the two charts — e.g. <b>California</b> is fully non-taxable on THD but product-taxable on the channel chart; <b>New Jersey</b> is the reverse.</p>
-    <div class="note"><i data-lucide="info"></i><span>Pick the channel (<b>THD</b> vs <b>Other</b>) correctly in the calculator — the taxability flags differ by chart.</span></div>
-    <a class="backtop" href="#top"><i data-lucide="arrow-up"></i>Back to top</a>
-  </section>
-
-  <!-- CANADA -->
-  <section class="section" id="canada">
-    <h2><i data-lucide="leaf"></i>Canada Tax Rates<span class="badge eff">Chart 6.9.2026</span></h2>
-    <p class="meta">Static province rates from the Canada window tax chart (Costco / Decorview / DirectBuy). Every line is taxable; no address lookup needed.</p>
-    <table>
-      <thead><tr><th>Province</th><th>Components</th><th class="r">Combined</th></tr></thead>
-      <tbody id="caRates"></tbody>
-    </table>
-    <div class="note"><i data-lucide="info"></i><span><b>British Columbia:</b> PST (7%) applies only to the Draperies &amp; Workroom product line (→12%); blinds, shutters, and all installation are GST-only (5%).</span></div>
-    <a class="backtop" href="#top"><i data-lucide="arrow-up"></i>Back to top</a>
-  </section>
-
-  <!-- BLENDED -->
-  <section class="section" id="blended">
-    <h2><i data-lucide="scale"></i>Blended Tax Guide</h2>
-    <p class="meta">A THD-only order-entry workaround — not a state-law concept.</p>
-    <p><b>When it applies:</b> a single THD job mixes <b>Blinds</b> and <b>Shutters</b> in a state where their taxability differs (e.g. Texas — blinds taxable, shutters exempt). Because order entry takes one rate for the whole order, you enter a single weighted-average rate.</p>
-    <p><b>How the rate is figured:</b></p>
-    <ol class="steps">
-      <li>Tax each line by its own taxability (taxable lines × the local rate; exempt lines = $0 tax).</li>
-      <li>Blended rate = <b>total tax ÷ total retail</b> across the whole order.</li>
-      <li>Enter that one rate on both the <b>TAX</b> and <b>TAX-Install</b> lines.</li>
-      <li>Add the mandatory Salesforce Note titled <b>"THD Blinds and Shutters"</b> recording the inputs.</li>
-    </ol>
-    <div class="note"><i data-lucide="info"></i><span>The calculator computes this automatically — when a blended case is detected it shows the <b>Blended tax rate</b> to key in. This page is the reference for what it's doing.</span></div>
-    <a class="backtop" href="#top"><i data-lucide="arrow-up"></i>Back to top</a>
-  </section>
-
-  <!-- HOW TO -->
-  <section class="section" id="howto">
-    <h2><i data-lucide="list-checks"></i>Download Rates &amp; Enter on a Quote</h2>
-    <p class="meta">The current Salesforce workflow for finding a rate and applying it to line items.</p>
-    <ol class="steps">
-      <li>On the Opportunity, copy the consumer's <b>install address</b>.</li>
-      <li>Home tab → <b>Designer Links</b> → <b>Tax Rates - THD Sales</b> → <b>Download</b>.</li>
-      <li>Open <b>The Home Depot Window Tax Chart US</b> PDF; find the state and confirm whether it's taxable by product category.</li>
-      <li>Click the state's link (or use the <a href="#state-lookups">State Rate Lookups</a> above), paste the address, and read the combined rate.</li>
-      <li>Back in the quote → <b>Manage Line Items</b> → enter the rate in <b>Tax Rate %</b> → <b>Save and Close</b>.</li>
-      <li>Apply the same rate to any added installation/service lines.</li>
-    </ol>
-    <a class="backtop" href="#top"><i data-lucide="arrow-up"></i>Back to top</a>
-  </section>
-
-  <p class="foot">Estimate only · SAP is the system of record for actual tax · RDIS-135</p>
+  <p class="foot">Estimate only · SAP is the system of record for actual tax</p>
 </div>
 
 <a id="top"></a>
@@ -279,14 +208,6 @@ var STATES=[
   {s:"Wisconsin",u:"https://www.salestaxhandbook.com/wisconsin/rates"},
   {s:"Wyoming",u:"https://ratelookup.wyo.gov/"}
 ];
-var CA=[
-  ["Alberta","GST 5%",5],["British Columbia","GST 5% (+PST 7% drapery)",5],
-  ["Manitoba","GST 5% + PST 7%",12],["New Brunswick","HST 15%",15],
-  ["Newfoundland & Labrador","HST 15%",15],["Northwest Territories","GST 5%",5],
-  ["Nova Scotia","HST 14%",14],["Nunavut","GST 5%",5],["Ontario","HST 13%",13],
-  ["Prince Edward Island","HST 15%",15],["Quebec","GST 5% + QST 9.975%",14.975],
-  ["Saskatchewan","GST 5% + PST 6%",11],["Yukon Territory","GST 5%",5]
-];
 function el(tag,cls,html){var e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e;}
 function renderStates(filter){
   var list=document.getElementById('stateList');list.innerHTML='';
@@ -305,14 +226,7 @@ function renderStates(filter){
   });
   if(window.lucide)lucide.createIcons();
 }
-function renderCanada(){
-  var tb=document.getElementById('caRates');
-  CA.forEach(function(r){
-    tb.appendChild(el('tr',null,'<td>'+r[0]+'</td><td>'+r[1]+'</td><td class="r">'+r[2]+'%</td>'));
-  });
-}
 renderStates('');
-renderCanada();
 document.getElementById('stateSearch').addEventListener('input',function(e){renderStates(e.target.value);});
 // Smooth-scroll for the hero/anchor links.
 document.querySelectorAll('a[href^="#"]').forEach(function(a){
