@@ -12,6 +12,13 @@ const (
 	ChannelTHD Channel = "THD"
 	// ChannelPartners is the shared Decorview/DirectBuy/Macy's/JCP channel.
 	ChannelPartners Channel = "Decorview/DirectBuy/Macy's/JCP"
+	// ChannelBJs is the BJ's Wholesale channel (Northeast footprint, ~17 states;
+	// mostly fully taxable, Michigan installed-package-only, DE/NH/VA exempt).
+	ChannelBJs Channel = "BJ's"
+	// ChannelSamsClub is Sam's Club. It appears only in the channel-agnostic
+	// warranty-fee chart (see warranty.go), not in the new-job or service-call
+	// matrix, so it carries no base matrix rows.
+	ChannelSamsClub Channel = "Sams Club"
 )
 
 // customerGroupToChannel is mapping table B: SAP account customer_group to RLN

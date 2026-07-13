@@ -17,8 +17,13 @@ func TestLoadMatrix(t *testing.T) {
 	// 2026-06-19 (RDIS-135): 1352 -> 1248. Removed the 104 Design Consultation Fee
 	// rows. The fee is seldom used and forced orders into the blended path; it was
 	// dropped from the calculator entirely.
-	if got := m.Len(); got != 1248 {
-		t.Errorf("Matrix.Len() = %d, want 1248 (update only if the seed change was intentional)", got)
+	// 2026-07-13 (RDIS-368): 1248 -> 1896. Added the 648-row THD "service_call"
+	// transaction-type layer (reselections/conversions/parts/repairs chart). Base
+	// new-job rows are unchanged; service-call rows carry transaction_type="service_call".
+	// 2026-07-13 (RDIS-368): 1896 -> 2100. Added the 204-row BJ's channel (17
+	// states x 3 categories x 4 line types) from the BJ's window tax chart.
+	if got := m.Len(); got != 2100 {
+		t.Errorf("Matrix.Len() = %d, want 2100 (update only if the seed change was intentional)", got)
 	}
 }
 
@@ -136,6 +141,78 @@ func TestMatrix_Taxable_PartnerChannel(t *testing.T) {
 	}
 }
 
+// TestMatrix_Taxable_BJs covers the BJ's channel: mostly fully taxable, the
+// Delaware/New Hampshire/Virginia exemptions, and Michigan's installed-package-
+// only treatment (installed package taxable, additional labor not).
+func TestMatrix_Taxable_BJs(t *testing.T) {
+	m, err := LoadMatrix()
+	if err != nil {
+		t.Fatalf("LoadMatrix() error = %v", err)
+	}
+	bjs := func(state string, ot OrderType, lt LineType) MatrixKey {
+		return MatrixKey{Channel: ChannelBJs, State: state, Category: CategoryBlinds, OrderType: ot, LineType: lt}
+	}
+	if tax, found := m.Taxable(bjs("Connecticut", OrderTypeJob, LineTypeInstalledPackage)); !found || !tax {
+		t.Errorf("BJ's CT blinds installed = (%v,%v), want (true,true)", tax, found)
+	}
+	for _, st := range []string{"Delaware", "New Hampshire", "Virginia"} {
+		if tax, found := m.Taxable(bjs(st, OrderTypeJob, LineTypeInstalledPackage)); !found || tax {
+			t.Errorf("BJ's %s blinds installed = (%v,%v), want (false,true)", st, tax, found)
+		}
+	}
+	if tax, found := m.Taxable(bjs("Michigan", OrderTypeJob, LineTypeInstalledPackage)); !found || !tax {
+		t.Errorf("BJ's MI blinds installed = (%v,%v), want (true,true)", tax, found)
+	}
+	if tax, found := m.Taxable(bjs("Michigan", OrderTypeJob, LineTypeAdditionalLabor)); !found || tax {
+		t.Errorf("BJ's MI blinds labor = (%v,%v), want (false,true)", tax, found)
+	}
+}
+
+// TestMatrix_Taxable_TransactionType covers the THD service-call overlay: the
+// service-call chart diverges from the new-job base in some states, it is a
+// distinct layer, and a lookup with no service-call-specific row falls back to
+// the base (new-job) treatment.
+func TestMatrix_Taxable_TransactionType(t *testing.T) {
+	m, err := LoadMatrix()
+	if err != nil {
+		t.Fatalf("LoadMatrix() error = %v", err)
+	}
+
+	caBlindsJob := func(txn TransactionType) MatrixKey {
+		return MatrixKey{Channel: ChannelTHD, State: "California", Category: CategoryBlinds, OrderType: OrderTypeJob, LineType: LineTypeInstalledPackage, TransactionType: txn}
+	}
+	// New job (base): California THD blinds installed is exempt.
+	if tax, found := m.Taxable(caBlindsJob(TxnNewJob)); !found || tax {
+		t.Errorf("new-job CA blinds = (taxable %v, found %v), want (false, true)", tax, found)
+	}
+	// Conversion: the same line flips taxable per the conversion chart.
+	if tax, found := m.Taxable(caBlindsJob(TxnServiceCall)); !found || !tax {
+		t.Errorf("conversion CA blinds = (taxable %v, found %v), want (true, true)", tax, found)
+	}
+
+	// Fallback: the conversion chart is THD-only, so a partner-channel conversion
+	// lookup has no specific row and must fall back to the partner base row.
+	partnerBase := MatrixKey{Channel: ChannelPartners, State: "Texas", Category: CategoryBlinds, OrderType: OrderTypeJob, LineType: LineTypeInstalledPackage}
+	baseTax, baseFound := m.Taxable(partnerBase)
+	partnerConv := partnerBase
+	partnerConv.TransactionType = TxnServiceCall
+	convTax, convFound := m.Taxable(partnerConv)
+	if !baseFound || !convFound || baseTax != convTax {
+		t.Errorf("partner conversion should fall back to base: base=(%v,%v) conv=(%v,%v)", baseTax, baseFound, convTax, convFound)
+	}
+
+	// Alaska - Fairbanks is conversion-only: present for conversion, absent for new job.
+	fairbanks := func(txn TransactionType) MatrixKey {
+		return MatrixKey{Channel: ChannelTHD, State: "Alaska - Fairbanks", Category: CategoryBlinds, OrderType: OrderTypeJob, LineType: LineTypeInstalledPackage, TransactionType: txn}
+	}
+	if _, found := m.Taxable(fairbanks(TxnNewJob)); found {
+		t.Errorf("Alaska - Fairbanks should not exist in the new-job base")
+	}
+	if tax, found := m.Taxable(fairbanks(TxnServiceCall)); !found || !tax {
+		t.Errorf("Alaska - Fairbanks conversion blinds = (taxable %v, found %v), want (true, true)", tax, found)
+	}
+}
+
 // TestMatrix_NoConsultationFee documents that the Design Consultation Fee was
 // removed from the calculator (RDIS-135, 2026-06-19): no seed row carries that
 // product/line type and mapping table A never yields it. The fee was seldom used
@@ -175,15 +252,16 @@ func TestMatrix_StateSet(t *testing.T) {
 	for key := range m.index {
 		states[key.State] = true
 	}
-	if len(states) != 54 {
+	if len(states) != 55 {
 		got := make([]string, 0, len(states))
 		for s := range states {
 			got = append(got, s)
 		}
 		sort.Strings(got)
-		t.Fatalf("distinct states = %d, want 54 (50 states + DC + 4 Alaska localities - plain Alaska). got: %v", len(states), got)
+		t.Fatalf("distinct states = %d, want 55 (50 states + DC + 5 Alaska localities - plain Alaska). got: %v", len(states), got)
 	}
-	for _, locality := range []string{"Alaska - Anchorage", "Alaska - Juneau", "Alaska - Kenai", "Alaska - Wasilla"} {
+	// 2026-07-13 (RDIS-368): the THD service-call chart adds the Alaska - Fairbanks locality.
+	for _, locality := range []string{"Alaska - Anchorage", "Alaska - Fairbanks", "Alaska - Juneau", "Alaska - Kenai", "Alaska - Wasilla"} {
 		if !states[locality] {
 			t.Errorf("expected Alaska locality %q in state set", locality)
 		}
@@ -223,6 +301,11 @@ func TestLoadMatrix_ErrorPaths(t *testing.T) {
 			name:    "unknown line_type",
 			raw:     `{"matrix":[{"channel":"THD","state":"Texas","product":"Blinds","order_type":"Job","line_type":"Freight","taxable":true}]}`,
 			wantErr: "unknown line_type",
+		},
+		{
+			name:    "unknown transaction_type",
+			raw:     `{"matrix":[{"channel":"THD","state":"Texas","product":"Blinds","order_type":"Job","line_type":"Product","transaction_type":"lease","taxable":true}]}`,
+			wantErr: "unknown transaction_type",
 		},
 		{
 			name: "duplicate key with conflicting flag",

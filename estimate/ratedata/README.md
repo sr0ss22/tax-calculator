@@ -20,6 +20,16 @@ go run ./tools/buildrates -src ~/Downloads/avalara-csvs
 
 That rewrites `us-zip-rates.csv` (one file in the diff). Commit and deploy.
 
+## AZ city rate table (reference / validation)
+
+`az-city-rates.csv` (`city, rate, jurisdiction`) is HD's authoritative **AZ Sales
+tax by City** chart. It is a **reference and validation** dataset, not part of the
+ZIP rate path: it has no `ZipCode` column, so the Avalara loader skips it, and the
+calculator keeps resolving Arizona rates by ZIP (TaxJar / the ZIP table). A city
+can appear more than once (different jurisdictions and rates). It is loaded by
+`estimate/az_rates.go` and exists to cross-check the ZIP path and serve as an
+offline AZ reference.
+
 ## Notes
 
 - The importer matches columns by name, so Avalara's standard export

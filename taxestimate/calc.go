@@ -76,6 +76,9 @@ type TaxLineInput struct {
 	OrderType OrderType
 	LineType  LineType
 	Amount    float64
+	// TransactionType selects the tax chart: new installed job (the zero value)
+	// or a service call (reselection/conversion/parts/repair). Warranty fees use a separate flow.
+	TransactionType TransactionType
 }
 
 // LineTaxResult is the per-line outcome.
@@ -143,11 +146,12 @@ func (c *Calculator) Compute(channel Channel, state string, rate float64, lines 
 
 	for _, line := range lines {
 		taxable, found := c.matrix.Taxable(MatrixKey{
-			Channel:   channel,
-			State:     state,
-			Category:  line.Category,
-			OrderType: line.OrderType,
-			LineType:  line.LineType,
+			Channel:         channel,
+			State:           state,
+			Category:        line.Category,
+			OrderType:       line.OrderType,
+			LineType:        line.LineType,
+			TransactionType: line.TransactionType,
 		})
 
 		lineResult := LineTaxResult{Input: line, Found: found, Taxable: found && taxable}

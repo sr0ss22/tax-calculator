@@ -227,12 +227,20 @@
           <div class="seg" id="channel">
             <button type="button" class="tog active" data-val="THD" onclick="pickTog(this)"><i data-lucide="house"></i>THD</button>
             <button type="button" class="tog" data-val="partners" onclick="pickTog(this)"><i data-lucide="store"></i>Other</button>
+            <button type="button" class="tog" data-val="bjs" onclick="pickTog(this)"><i data-lucide="warehouse"></i>BJ's</button>
           </div>
         </div>
         <div class="fldcol"><span class="fldlbl lblrow">Install<button type="button" class="infobtn" aria-label="About Install options" data-tip="Self Install is rare and must be pre-approved by support."><i data-lucide="info"></i></button></span>
           <div class="seg" id="install">
             <button type="button" class="tog active" data-val="RLN" onclick="pickInstall(this)"><i data-lucide="hard-hat"></i>RLN</button>
             <button type="button" class="tog" data-val="self" onclick="pickInstall(this)"><i data-lucide="user"></i>Self</button>
+          </div>
+        </div>
+        <div class="fldcol"><span class="fldlbl lblrow">Transaction<button type="button" class="infobtn" aria-label="About transaction types" data-tip="New installed job uses the standard chart. A Service Call covers reselections, conversions, parts and repairs. Warranty is the flat $149-$249 fee, on its own channel-agnostic chart with flat state-only rates. THD taxes some states differently, e.g. California."><i data-lucide="info"></i></button></span>
+          <div class="seg" id="txn">
+            <button type="button" class="tog active" data-val="new_job" onclick="pickTog(this)"><i data-lucide="package-plus"></i>New job</button>
+            <button type="button" class="tog" data-val="service_call" onclick="pickTog(this)"><i data-lucide="refresh-cw"></i>Service Call</button>
+            <button type="button" class="tog" data-val="warranty" onclick="pickTog(this)"><i data-lucide="shield-check"></i>Warranty</button>
           </div>
         </div>
       </div>
@@ -407,6 +415,7 @@ function collect(){
   var roPct=parseFloat(document.getElementById('rate').value);
   return {
     channel:document.querySelector('#channel .tog.active').dataset.val,
+    transaction:document.querySelector('#txn .tog.active').dataset.val,
     state:document.getElementById('state').value,
     zip:document.getElementById('zip').value,
     rateOverride:isNaN(roPct)?0:(roPct/100),
@@ -521,7 +530,25 @@ async function run(){
 }
 // Build the page with one empty starter line (Blinds/Shades) — no defaulted
 // amounts, so the estimate stays blank until the rep enters real figures.
+// Page mode: the /warranty route (or ?mode=warranty) is a focused view for
+// service transactions — it removes "New job" so only Service Call and Warranty
+// show, and defaults to Service Call. The main "/" page keeps all three.
+function applyPageMode(){
+  var serviceOnly = /(^|\/)warranty(\/|$)/i.test(location.pathname) || /[?&]mode=(warranty|service)/i.test(location.search);
+  if(!serviceOnly) return;
+  var txn=document.getElementById('txn');
+  if(!txn) return;
+  var nj=txn.querySelector('.tog[data-val="new_job"]');
+  if(nj) nj.remove();
+  txn.querySelectorAll('.tog').forEach(function(b){b.classList.remove('active')});
+  var sc=txn.querySelector('.tog[data-val="service_call"]');
+  if(sc) sc.classList.add('active');
+  var sub=document.querySelector('.subtitle');
+  if(sub) sub.textContent='Service call & warranty sales tax. Pick a location and channel, then add lines.';
+  document.title='Service & Warranty Tax';
+}
 populateStates();
+applyPageMode();
 addProductLine('blinds');
 icons();
 // Auto-recalculate as the user types in any amount, the ZIP, or the rate override.
