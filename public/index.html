@@ -558,6 +558,21 @@ function applyPageMode(){
     if(njMain) njMain.classList.add('active');
     var fld=txn.closest('.fldcol');
     if(fld) fld.style.display='none';
+    // BJ's is not supported for new orders, so it is hidden on the main page and
+    // appears only on /warranty. If it was somehow the active channel, fall back to THD.
+    var ch=document.getElementById('channel');
+    if(ch){
+      var bjs=ch.querySelector('.tog[data-val="bjs"]');
+      if(bjs){
+        var bjsActive=bjs.classList.contains('active');
+        bjs.remove();
+        if(bjsActive){
+          ch.querySelectorAll('.tog').forEach(function(b){b.classList.remove('active')});
+          var thd=ch.querySelector('.tog[data-val="THD"]');
+          if(thd) thd.classList.add('active');
+        }
+      }
+    }
   }
 }
 populateStates();
