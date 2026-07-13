@@ -530,22 +530,35 @@ async function run(){
 }
 // Build the page with one empty starter line (Blinds/Shades) — no defaulted
 // amounts, so the estimate stays blank until the rep enters real figures.
-// Page mode: the /warranty route (or ?mode=warranty) is a focused view for
-// service transactions — it removes "New job" so only Service Call and Warranty
-// show, and defaults to Service Call. The main "/" page keeps all three.
+// Page mode splits the tool by route:
+//   - the main "/" page is New-job-only (Service Call and Warranty do NOT appear;
+//     the single-option Transaction selector is hidden and new_job stays active).
+//   - the /warranty route (or ?mode=warranty) is the service-transaction view: it
+//     removes "New job" and shows only Service Call + Warranty, defaulting to Service Call.
 function applyPageMode(){
   var serviceOnly = /(^|\/)warranty(\/|$)/i.test(location.pathname) || /[?&]mode=(warranty|service)/i.test(location.search);
-  if(!serviceOnly) return;
   var txn=document.getElementById('txn');
   if(!txn) return;
-  var nj=txn.querySelector('.tog[data-val="new_job"]');
-  if(nj) nj.remove();
-  txn.querySelectorAll('.tog').forEach(function(b){b.classList.remove('active')});
-  var sc=txn.querySelector('.tog[data-val="service_call"]');
-  if(sc) sc.classList.add('active');
-  var sub=document.querySelector('.subtitle');
-  if(sub) sub.textContent='Service call & warranty sales tax. Pick a location and channel, then add lines.';
-  document.title='Service & Warranty Tax';
+  if(serviceOnly){
+    var nj=txn.querySelector('.tog[data-val="new_job"]');
+    if(nj) nj.remove();
+    txn.querySelectorAll('.tog').forEach(function(b){b.classList.remove('active')});
+    var sc=txn.querySelector('.tog[data-val="service_call"]');
+    if(sc) sc.classList.add('active');
+    var sub=document.querySelector('.subtitle');
+    if(sub) sub.textContent='Service call & warranty sales tax. Pick a location and channel, then add lines.';
+    document.title='Service & Warranty Tax';
+  } else {
+    ['service_call','warranty'].forEach(function(v){
+      var b=txn.querySelector('.tog[data-val="'+v+'"]');
+      if(b) b.remove();
+    });
+    txn.querySelectorAll('.tog').forEach(function(b){b.classList.remove('active')});
+    var njMain=txn.querySelector('.tog[data-val="new_job"]');
+    if(njMain) njMain.classList.add('active');
+    var fld=txn.closest('.fldcol');
+    if(fld) fld.style.display='none';
+  }
 }
 populateStates();
 applyPageMode();
