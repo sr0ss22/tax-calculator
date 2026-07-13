@@ -38,6 +38,25 @@ const (
 	LineTypeInstallationLabor LineType = "Installation Labor"
 )
 
+// TransactionType distinguishes the tax chart a line is priced against. New
+// installed jobs (the default, and the primary RLN quote flow) use the base
+// matrix rows, which carry no transaction_type. Service calls (reselections,
+// conversions, parts, and repairs) use the THD service-call chart, encoded as
+// overlay rows tagged "service_call". Warranty fees are a separate flat-fee flow handled
+// outside this matrix (see warranty.go). A lookup for a transaction type with no
+// specific row falls back to the base (new-job) row, so a transaction type only
+// changes an answer where the chart actually diverges.
+type TransactionType string
+
+const (
+	// TxnNewJob is a new installed job. It is the zero value so existing callers
+	// and existing seed rows (which carry no transaction_type) resolve to it and
+	// keep their current behavior.
+	TxnNewJob TransactionType = ""
+	// TxnServiceCall is a service call: a reselection, conversion, part, or repair.
+	TxnServiceCall TransactionType = "service_call"
+)
+
 // matrixRow is one row of the taxability matrix: a (channel, state, product,
 // order_type, line_type) tuple and whether that combination is taxable.
 type matrixRow struct {
@@ -49,7 +68,10 @@ type matrixRow struct {
 	Product   string `json:"product"`
 	OrderType string `json:"order_type"`
 	LineType  string `json:"line_type"`
-	Taxable   bool   `json:"taxable"`
+	// TransactionType is empty for base new-job rows and "service_call" for THD
+	// service-call-chart overlay rows.
+	TransactionType string `json:"transaction_type,omitempty"`
+	Taxable         bool   `json:"taxable"`
 }
 
 // stateRate is the population-weighted combined rate fallback for a state.
@@ -92,11 +114,12 @@ type taxData struct {
 // strings, including resolving an Alaska ZIP to its locality, or the lookup
 // returns not-found.
 type MatrixKey struct {
-	Channel   Channel
-	State     string
-	Category  Category
-	OrderType OrderType
-	LineType  LineType
+	Channel         Channel
+	State           string
+	Category        Category
+	OrderType       OrderType
+	LineType        LineType
+	TransactionType TransactionType
 }
 
 // Matrix is the authoritative taxability matrix loaded from the seed data. Its
@@ -146,6 +169,8 @@ var knownCategories = map[Category]bool{
 var knownChannels = map[Channel]bool{
 	ChannelTHD:      true,
 	ChannelPartners: true,
+	ChannelBJs:      true,
+	ChannelSamsClub: true,
 }
 
 var knownOrderTypes = map[OrderType]bool{
@@ -158,6 +183,11 @@ var knownLineTypes = map[LineType]bool{
 	LineTypeAdditionalLabor:   true,
 	LineTypeProduct:           true,
 	LineTypeInstallationLabor: true,
+}
+
+var knownTransactionTypes = map[TransactionType]bool{
+	TxnNewJob:      true,
+	TxnServiceCall: true,
 }
 
 // loadMatrix parses raw seed bytes into an indexed matrix. It fails loudly so a
@@ -191,12 +221,17 @@ func loadMatrix(raw []byte) (*Matrix, error) {
 		if !knownLineTypes[lineType] {
 			return nil, fmt.Errorf("taxestimate: row %d has unknown line_type %q", i, r.LineType)
 		}
+		txnType := TransactionType(r.TransactionType)
+		if !knownTransactionTypes[txnType] {
+			return nil, fmt.Errorf("taxestimate: row %d has unknown transaction_type %q", i, r.TransactionType)
+		}
 		key := MatrixKey{
-			Channel:   channel,
-			State:     r.State,
-			Category:  category,
-			OrderType: orderType,
-			LineType:  lineType,
+			Channel:         channel,
+			State:           r.State,
+			Category:        category,
+			OrderType:       orderType,
+			LineType:        lineType,
+			TransactionType: txnType,
 		}
 		if existing, dup := index[key]; dup && existing != r.Taxable {
 			return nil, fmt.Errorf("taxestimate: row %d duplicates key %+v with a conflicting taxable flag", i, key)
@@ -210,8 +245,20 @@ func loadMatrix(raw []byte) (*Matrix, error) {
 // when the key is not present in the matrix; callers flag such a line for review
 // and exclude it from the taxable base rather than assuming a default.
 func (m *Matrix) Taxable(key MatrixKey) (taxable bool, found bool) {
-	t, ok := m.index[key]
-	return t, ok
+	if t, ok := m.index[key]; ok {
+		return t, true
+	}
+	// Fall back to the base (new-job) row when no transaction-type-specific row
+	// exists, so a transaction type only changes an answer where the chart
+	// actually diverges; every other line keeps its new-job treatment.
+	if key.TransactionType != TxnNewJob {
+		base := key
+		base.TransactionType = TxnNewJob
+		if t, ok := m.index[base]; ok {
+			return t, true
+		}
+	}
+	return false, false
 }
 
 // Len returns the number of distinct rows indexed.

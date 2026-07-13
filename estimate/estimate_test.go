@@ -125,6 +125,91 @@ func TestEstimate_CanadaBC_DraperyException(t *testing.T) {
 	}
 }
 
+func TestEstimate_ServiceCall_CaliforniaTHD(t *testing.T) {
+	e := newEstimator(t)
+	// New job: THD California blinds are exempt.
+	nj, err := e.Estimate(context.Background(), Request{
+		Channel: "THD", State: "CA", RateOverride: 0.09,
+		Lines: []Line{{Name: "Blinds", Category: "blinds", Amount: 1000}},
+	})
+	if err != nil {
+		t.Fatalf("Estimate() error = %v", err)
+	}
+	if nj.TaxableBase != 0 {
+		t.Errorf("new-job CA THD blinds TaxableBase = %v, want 0 (exempt)", nj.TaxableBase)
+	}
+	// Service call: the same line becomes taxable per the THD service-call chart.
+	conv, err := e.Estimate(context.Background(), Request{
+		Channel: "THD", State: "CA", RateOverride: 0.09, Transaction: "service_call",
+		Lines: []Line{{Name: "Blinds", Category: "blinds", Amount: 1000}},
+	})
+	if err != nil {
+		t.Fatalf("Estimate() error = %v", err)
+	}
+	if !approxEq(conv.TaxableBase, 1000) {
+		t.Errorf("service-call CA THD blinds TaxableBase = %v, want 1000", conv.TaxableBase)
+	}
+	if !approxEq(conv.TotalTax, 90) {
+		t.Errorf("service-call CA THD blinds TotalTax = %v, want 90 (1000 * 0.09)", conv.TotalTax)
+	}
+}
+
+func TestEstimate_BJsChannel(t *testing.T) {
+	e := newEstimator(t)
+	// BJ's Virginia is exempt.
+	va, err := e.Estimate(context.Background(), Request{
+		Channel: "bjs", State: "VA", RateOverride: 0.053,
+		Lines: []Line{{Name: "Blinds", Category: "blinds", Amount: 1000}},
+	})
+	if err != nil {
+		t.Fatalf("Estimate() error = %v", err)
+	}
+	if va.TaxableBase != 0 {
+		t.Errorf("BJ's VA blinds TaxableBase = %v, want 0 (exempt)", va.TaxableBase)
+	}
+	// BJ's Connecticut is taxable.
+	ct, err := e.Estimate(context.Background(), Request{
+		Channel: "bjs", State: "CT", RateOverride: 0.0635,
+		Lines: []Line{{Name: "Blinds", Category: "blinds", Amount: 1000}},
+	})
+	if err != nil {
+		t.Fatalf("Estimate() error = %v", err)
+	}
+	if !approxEq(ct.TaxableBase, 1000) {
+		t.Errorf("BJ's CT blinds TaxableBase = %v, want 1000 (taxable)", ct.TaxableBase)
+	}
+}
+
+func TestEstimate_Warranty(t *testing.T) {
+	e := newEstimator(t)
+	// Warranty shutters in California are taxable (the service-call chart exempts them).
+	ca, err := e.Estimate(context.Background(), Request{
+		Transaction: "warranty", State: "CA", RateOverride: 0.09,
+		Lines: []Line{{Name: "Shutters", Category: "shutters", Amount: 1000}},
+	})
+	if err != nil {
+		t.Fatalf("Estimate() error = %v", err)
+	}
+	if !approxEq(ca.TaxableBase, 1000) {
+		t.Errorf("warranty CA shutters TaxableBase = %v, want 1000 (taxable under warranty)", ca.TaxableBase)
+	}
+	// Illinois warranty uses the flat 6.25% state-only override, not the combined
+	// rate, and only draperies are taxable there.
+	il, err := e.Estimate(context.Background(), Request{
+		Transaction: "warranty", State: "Illinois",
+		Lines: []Line{{Name: "Drapery", Category: "draperies", Amount: 1000}},
+	})
+	if err != nil {
+		t.Fatalf("Estimate() error = %v", err)
+	}
+	if !approxEq(il.CombinedRate, 0.0625) {
+		t.Errorf("warranty IL rate = %v, want 0.0625 (flat state-only override)", il.CombinedRate)
+	}
+	if !approxEq(il.TotalTax, 62.5) {
+		t.Errorf("warranty IL drapery tax = %v, want 62.5", il.TotalTax)
+	}
+}
+
 func lineByName(res Result, name string) (LineResult, bool) {
 	for _, l := range res.Lines {
 		if l.Name == name {

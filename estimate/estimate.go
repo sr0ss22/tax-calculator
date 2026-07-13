@@ -9,6 +9,7 @@ package estimate
 import (
 	"context"
 	"fmt"
+	"math"
 	"strings"
 
 	"github.com/sr0ss22/tax-calculator/taxestimate"
@@ -28,11 +29,15 @@ type Line struct {
 
 // Request is an entered quote to estimate.
 type Request struct {
-	Channel      string  `json:"channel"`      // "THD" (default) or "partners"
+	Channel      string  `json:"channel"`      // "THD" (default), "partners", or "bjs"
 	State        string  `json:"state"`        // US state code/name, or Canadian province name/code
 	Zip          string  `json:"zip"`          // US ZIP (for TaxJar); ignored for Canada
 	RateOverride float64 `json:"rateOverride"` // optional US combined rate fraction (0.0825 = 8.25%)
-	Lines        []Line  `json:"lines"`
+	// Transaction selects the tax chart: "" or "new_job" (default), or
+	// "service_call" (reselection/conversion/parts/repair). Warranty fees use a
+	// separate flow. Ignored for Canada (all-taxable, single chart).
+	Transaction string `json:"transaction"`
+	Lines       []Line `json:"lines"`
 }
 
 // LineResult is the per-line outcome for display.
@@ -51,26 +56,26 @@ type LineResult struct {
 
 // Result is the whole-quote estimate.
 type Result struct {
-	Country        string       `json:"country"` // "US" or "Canada"
-	State          string       `json:"state"`
-	Zip            string       `json:"zip,omitempty"`
-	CombinedRate   float64      `json:"combinedRate"`
-	RateEstimated  bool         `json:"rateEstimated"`
-	RateOverridden bool         `json:"rateOverridden"`
+	Country        string  `json:"country"` // "US" or "Canada"
+	State          string  `json:"state"`
+	Zip            string  `json:"zip,omitempty"`
+	CombinedRate   float64 `json:"combinedRate"`
+	RateEstimated  bool    `json:"rateEstimated"`
+	RateOverridden bool    `json:"rateOverridden"`
 	// RateBoundaryRisk is true when the ZIP-table rate includes a city-level tax,
 	// so a ZIP that straddles the city limit may be over/under-stated — verify.
 	RateBoundaryRisk bool `json:"rateBoundaryRisk"`
 	// RateCityRate is the city-tax component of a ZIP-table rate (fraction), so the
 	// UI can tell the user how much to deduct if the address is outside city limits.
-	RateCityRate float64 `json:"rateCityRate,omitempty"`
-	TaxableBase    float64      `json:"taxableBase"`
-	Retail         float64      `json:"retail"`
-	TotalTax       float64      `json:"totalTax"`
-	OrderTotal     float64      `json:"orderTotal"`
-	Blended        bool         `json:"blended"`
-	BlendedRate    float64      `json:"blendedRate"`
-	Lines          []LineResult `json:"lines"`
-	Warnings       []string     `json:"warnings"`
+	RateCityRate float64      `json:"rateCityRate,omitempty"`
+	TaxableBase  float64      `json:"taxableBase"`
+	Retail       float64      `json:"retail"`
+	TotalTax     float64      `json:"totalTax"`
+	OrderTotal   float64      `json:"orderTotal"`
+	Blended      bool         `json:"blended"`
+	BlendedRate  float64      `json:"blendedRate"`
+	Lines        []LineResult `json:"lines"`
+	Warnings     []string     `json:"warnings"`
 }
 
 // rateLookup is the optional US rate provider (TaxJar). Canada never uses it.
@@ -80,9 +85,10 @@ type rateLookup interface {
 
 // Estimator holds the loaded engine. Build once and reuse across requests.
 type Estimator struct {
-	calc   *taxestimate.Calculator
-	canada *taxestimate.CanadaRates
-	rates  rateLookup // nil when no TaxJar token is configured
+	calc     *taxestimate.Calculator
+	canada   *taxestimate.CanadaRates
+	warranty *taxestimate.Warranty
+	rates    rateLookup // nil when no TaxJar token is configured
 }
 
 // New loads the embedded matrix and Canada chart. When taxJarToken is non-empty,
@@ -97,7 +103,11 @@ func New(taxJarToken string) (*Estimator, error) {
 	if err != nil {
 		return nil, fmt.Errorf("load canada: %w", err)
 	}
-	e := &Estimator{calc: taxestimate.NewCalculator(matrix), canada: canada}
+	warranty, err := taxestimate.LoadWarranty()
+	if err != nil {
+		return nil, fmt.Errorf("load warranty: %w", err)
+	}
+	e := &Estimator{calc: taxestimate.NewCalculator(matrix), canada: canada, warranty: warranty}
 	if taxJarToken != "" {
 		e.rates = taxestimate.NewRateService(taxestimate.NewTaxJarProvider(taxJarToken, "", nil), nil)
 	}
@@ -120,10 +130,30 @@ func categoryFromString(s string) (taxestimate.Category, bool) {
 
 // channelFor maps a label to a channel; THD is the default.
 func channelFor(s string) taxestimate.Channel {
-	if strings.EqualFold(strings.TrimSpace(s), "partners") || s == "2" {
+	switch strings.ToLower(strings.TrimSpace(s)) {
+	case "partners", "2":
 		return taxestimate.ChannelPartners
+	case "bjs", "bj's", "bj’s":
+		return taxestimate.ChannelBJs
+	default:
+		return taxestimate.ChannelTHD
 	}
-	return taxestimate.ChannelTHD
+}
+
+// txnTypeFor maps a label to a transaction type; new installed job is the default.
+func txnTypeFor(s string) taxestimate.TransactionType {
+	switch strings.ToLower(strings.TrimSpace(s)) {
+	case "service_call", "service call", "servicecall", "conversion", "conversions", "reselection", "reselections", "parts", "repair", "repairs":
+		return taxestimate.TxnServiceCall
+	default:
+		return taxestimate.TxnNewJob
+	}
+}
+
+// isWarranty reports whether the request is a warranty-fee estimate, which is
+// taxed off the separate channel-agnostic warranty chart rather than the matrix.
+func isWarranty(s string) bool {
+	return strings.EqualFold(strings.TrimSpace(s), "warranty")
 }
 
 // builtLine pairs a calculator input with its display name.
@@ -140,7 +170,7 @@ type builtLine struct {
 //   - product -> the category's product taxability
 //   - install -> the category's Additional Labor Services taxability (install
 //     blinds, install shutters, and install draperies are taxed separately)
-func buildLines(req Request, productLineType taxestimate.LineType) ([]builtLine, error) {
+func buildLines(req Request, productLineType taxestimate.LineType, txn taxestimate.TransactionType) ([]builtLine, error) {
 	out := make([]builtLine, 0, len(req.Lines))
 
 	for i, l := range req.Lines {
@@ -165,7 +195,7 @@ func buildLines(req Request, productLineType taxestimate.LineType) ([]builtLine,
 				lineType = taxestimate.LineTypeAdditionalLabor
 				kind = "install"
 			}
-			input = taxestimate.TaxLineInput{Category: cat, OrderType: taxestimate.OrderTypeJob, LineType: lineType, Amount: l.Amount}
+			input = taxestimate.TaxLineInput{Category: cat, OrderType: taxestimate.OrderTypeJob, LineType: lineType, Amount: l.Amount, TransactionType: txn}
 		default:
 			return nil, fmt.Errorf("line %d (%s): unknown kind %q (use product or install)", i+1, name, l.Kind)
 		}
@@ -189,6 +219,9 @@ func (e *Estimator) Estimate(ctx context.Context, req Request) (Result, error) {
 		return Result{}, fmt.Errorf("rateOverride must be a non-negative fraction (e.g. 0.0825)")
 	}
 
+	if isWarranty(req.Transaction) {
+		return e.estimateWarranty(ctx, req)
+	}
 	if province, ok := e.canada.ResolveProvince(req.State); ok {
 		return e.estimateCanada(req, province)
 	}
@@ -196,7 +229,7 @@ func (e *Estimator) Estimate(ctx context.Context, req Request) (Result, error) {
 }
 
 func (e *Estimator) estimateUS(ctx context.Context, req Request) (Result, error) {
-	built, err := buildLines(req, taxestimate.LineTypeInstalledPackage)
+	built, err := buildLines(req, taxestimate.LineTypeInstalledPackage, txnTypeFor(req.Transaction))
 	if err != nil {
 		return Result{}, err
 	}
@@ -279,7 +312,7 @@ func (e *Estimator) estimateUS(ctx context.Context, req Request) (Result, error)
 }
 
 func (e *Estimator) estimateCanada(req Request, province string) (Result, error) {
-	built, err := buildLines(req, taxestimate.LineTypeProduct)
+	built, err := buildLines(req, taxestimate.LineTypeProduct, taxestimate.TxnNewJob)
 	if err != nil {
 		return Result{}, err
 	}
@@ -297,6 +330,95 @@ func (e *Estimator) estimateCanada(req Request, province string) (Result, error)
 	}
 	fillOrder(&res, built, order)
 	res.Warnings = append(res.Warnings, "Canada: static province rate from the window tax chart; all lines taxable (no address lookup, no TaxJar).")
+	return res, nil
+}
+
+// estimateWarranty computes a warranty-fee estimate off the channel-agnostic
+// warranty chart. Warranty fees are a flat $149-$249 fee: taxability comes from
+// the warranty grid (not the new-job or service-call matrix), and where the chart
+// lists a flat state-only rate that rate replaces the combined ZIP rate.
+func (e *Estimator) estimateWarranty(ctx context.Context, req Request) (Result, error) {
+	built, err := buildLines(req, taxestimate.LineTypeInstalledPackage, taxestimate.TxnNewJob)
+	if err != nil {
+		return Result{}, err
+	}
+	state, stateOK := stateFor(req.State)
+	res := Result{Country: "US", State: state, Zip: strings.TrimSpace(req.Zip)}
+	if !stateOK {
+		res.Warnings = append(res.Warnings, "shipping location has no resolvable state; tax not estimated")
+	}
+
+	// Warranty rate: a manual override wins; else the flat state-only warranty rate
+	// where the chart lists one; else the normal combined rate (TaxJar -> offline
+	// ZIP table -> state average).
+	var rate taxestimate.RateResult
+	switch {
+	case req.RateOverride > 0:
+		rate = taxestimate.RateResult{Zip: req.Zip, CombinedRate: req.RateOverride, Jurisdictions: "manual override"}
+		res.RateOverridden = true
+	default:
+		if wr, ok := e.warranty.RateOverride(state); ok {
+			rate = taxestimate.RateResult{Zip: req.Zip, CombinedRate: wr, Jurisdictions: "warranty flat state-only rate"}
+		} else {
+			if e.rates != nil && strings.TrimSpace(req.Zip) != "" {
+				rate = e.rates.LookupRate(ctx, req.Zip)
+			}
+			if rate.CombinedRate == 0 {
+				if zr, ok := zipRateFor(req.Zip); ok {
+					region := "Avalara monthly ZIP table"
+					if zr.region != "" {
+						region = zr.region + " (Avalara monthly ZIP table)"
+					}
+					rate = taxestimate.RateResult{Zip: req.Zip, CombinedRate: zr.combined, Jurisdictions: region}
+					res.RateBoundaryRisk = zr.cityRate > 0
+					res.RateCityRate = zr.cityRate
+				}
+			}
+			if rate.CombinedRate == 0 {
+				if avg, ok := stateAverageRate(state); ok {
+					rate = taxestimate.RateResult{Zip: req.Zip, CombinedRate: avg, Jurisdictions: "state average combined rate (Tax Foundation 2026)", Estimated: true}
+					res.Warnings = append(res.Warnings, "using the state average combined rate (estimate); enter a rate override for the exact local rate")
+				} else {
+					rate = taxestimate.RateResult{Zip: req.Zip, Estimated: true}
+					res.Warnings = append(res.Warnings, "no rate available for this state; enter a rate override")
+				}
+			}
+		}
+	}
+	res.RateEstimated = rate.Estimated
+	res.CombinedRate = rate.CombinedRate
+
+	res.Lines = make([]LineResult, 0, len(built))
+	var unmapped bool
+	for _, b := range built {
+		taxable, found := e.warranty.Taxable(state, b.input.Category, b.input.OrderType, b.input.LineType)
+		lr := LineResult{
+			Name:     b.name,
+			Category: string(b.input.Category),
+			Kind:     b.kind,
+			LineType: string(b.input.LineType),
+			Amount:   b.input.Amount,
+			Found:    found,
+			Taxable:  found && taxable,
+		}
+		if lr.Taxable {
+			lr.AppliedRate = rate.CombinedRate
+			lr.Tax = math.Round(b.input.Amount*rate.CombinedRate*100) / 100
+			res.TaxableBase += b.input.Amount
+		}
+		if !found {
+			unmapped = true
+		}
+		res.Retail += b.input.Amount
+		res.TotalTax += lr.Tax
+		res.Lines = append(res.Lines, lr)
+	}
+	res.TotalTax = math.Round(res.TotalTax*100) / 100
+	res.OrderTotal = math.Round((res.Retail+res.TotalTax)*100) / 100
+	if unmapped {
+		res.Warnings = append(res.Warnings, "one or more lines were not found in the warranty chart")
+	}
+	res.Warnings = append(res.Warnings, "warranty fee ($149-$249): taxed off the channel-agnostic warranty chart, not the new-job or service-call matrix.")
 	return res, nil
 }
 

@@ -1,0 +1,282 @@
+city,rate,jurisdiction
+Aguila,0.063,Maricopa County
+Ajo,0.061,Pima County
+Alpine,0.061,Apache County
+Amado,0.061,Pima County
+Apache Junction,0.096,Apache Junction
+Arivaca,0.061,Pima County
+Arizona City,0.072,Pinal County
+Arlington,0.063,Maricopa County
+Ash Fork,0.0635,Yavapai County
+Avondale,0.088,Avondale
+Bagdad,0.0635,Yavapai County
+Bapchule,0.092,Casa Grande
+Bellemont,0.069,Coconino County
+Benson,0.096,Benson
+Bisbee,0.096,Bisbee
+Black Canyon City,0.0635,Yavapai County
+Blue,0.061,Greenlee County
+Blue Gap,0.0943,Pinetop-Lakeside
+Bouse,0.076,La Paz County
+Bowie,0.061,Cochise County
+Buckeye,0.093,Buckeye
+Bullhead City,0.076,Bullhead
+Bylas,0.066,Graham County
+Cameron,0.069,Coconino
+Camp Verde,0.1,Camp Verde
+Carefree,0.093,Carefree
+Casa Grande,0.092,Casa Grande
+Casa Grande,0.072,Pinal County
+Cashion,0.088,Avondale
+Catalina,0.061,Pima County
+Cave Creek,0.086,Phoenix
+Cave Creek,0.093,Cave Creek
+Central,0.066,Graham County
+Chambers,0.061,Apache County
+Chandler,0.078,Chandler
+Chandler Heights,0.063,Maricopa County
+Chinle,0.061,Apache
+Chino Valley,0.1035,Chino Valley
+Chloride,0.056,Mohave County
+Cibecue,0.0643,Navajo County
+Cibola,0.076,La Paz County
+Clarkdale,0.0985,Clarkdale
+Clay Springs,0.0643,Navajo County
+Claypool,0.066,Gila County
+Clifton,0.061,Greenlee County
+Cochise,0.061,Cochise County
+Colorado City,0.086,Colorado
+Concho,0.061,Apache County
+Congress,0.0635,Yavapai County
+Coolidge,0.102,Coolidge
+Cornville,0.0635,Yavapai County
+Cortaro,0.081,Marana
+Cottonwood,0.0985,Cottonwood
+Crown King,0.0635,Yavapai County
+Dateland,0.0671,Yuma County
+Dennehotso,0.061,Apache
+Dewey,0.0635,Yavapai County
+Dolan Springs,0.056,Mohave County
+Douglas,0.099,Douglas
+Dragoon,0.061,Cochise County
+Duncan,0.061,Greenlee County
+Eagar,0.091,Eagar
+Eden,0.086,Pima
+Ehrenberg,0.076,La Paz County
+El Mirage,0.093,El Mirage
+Elfrida,0.061,Cochise County
+Elgin,0.066,Santa Cruz County
+Eloy,0.102,Eloy
+Flagstaff,0.0918,Flagstaff
+Florence,0.092,Florence
+Forest Lakes,0.069,Coconino County
+Fort Apache,0.0643,Navajo County
+Fort Defiance,0.061,Apache
+Fort Huachuca,0.0805,Sierra Vista
+Fort Mcdowell,0.063,Maricopa County
+Fort Mohave,0.056,Mohave County
+Fort Thomas,0.066,Graham County
+Fountain Hills,0.092,Fountain Hills
+Fredonia,0.109,Fredonia
+Gadsden,0.0671,Yuma County
+Ganado,0.061,Apache
+Gila Bend,0.098,Gila Bend
+Gilbert,0.078,Gilbert
+Glendale,0.092,Glendale
+Glendale,0.086,Phoenix
+Glendale,0.063,Maricopa County
+Glendale Luke Afb,0.092,Glendale
+Globe,0.089,Globe
+Gold Canyon,0.072,Pinal County
+Golden Valley,0.056,Mohave County
+Goodyear,0.088,Goodyear
+Grand Canyon,0.069,Coconino County
+Gray Mountain,0.069,Coconino County
+Green Valley,0.061,Pima County
+Greer,0.061,Apache County
+Hackberry,0.056,Mohave County
+Happy Jack,0.069,Coconino County
+Hayden,0.096,Hayden (Gila Co)
+Heber,0.0643,Navajo County
+Hereford,0.061,Cochise County
+Higley,0.078,Gilbert
+Holbrook,0.0943,Holbrook
+Hotevilla,0.0643,Navajo County
+Houck,0.061,Apache
+Huachuca City,0.061,Cochise County
+Hualapai,0.056,Mohave County
+Humboldt,0.0835,Dewey-Humboldt
+Indian Wells,0.0918,Flagstaff
+Jerome,0.0985,Jerome
+Joseph City,0.0643,Navajo County
+Kaibeto,0.069,Coconino
+Kayenta,0.0643,Kayenta TownshipNav Nat
+Keams Canyon,0.0643,Navajo County
+Kearny,0.072,Pinal County
+Kingman,0.081,Kingman
+Kingman,0.056,Mohave County
+Kirkland,0.0635,Yavapai County
+Kykotsmovi Village,0.0643,Navajo County
+Lake Havasu City,0.076,Lake Havasu City
+Lake Montezuma,0.0635,Yavapai County
+Lakeside,0.0643,Navajo County
+Laveen,0.086,Phoenix
+Leupp,0.069,Coconino
+Litchfield Park,0.063,Maricopa County
+Littlefield,0.056,Mohave County
+Lukachukai,0.061,Apache
+Lukeville,0.061,Pima County
+Lupton,0.061,Apache
+Mammoth,0.112,Mammoth
+Many Farms,0.061,Apache
+Marana,0.061,Pima County
+Marana,0.081,Marana
+Marble Canyon,0.069,Coconino County
+Maricopa,0.092,Maricopa
+Maricopa,0.072,Pinal County
+Mayer,0.0635,Yavapai County
+Mc Neal,0.061,Cochise County
+Mcnary,0.061,Apache County
+Meadview,0.056,Mohave County
+Mesa,0.083,Mesa
+Miami,0.091,Miami
+Mohave Valley,0.056,Mohave County
+Morenci,0.091,Clifton
+Mormon Lake,0.069,Coconino County
+Morristown,0.063,Maricopa County
+Mount Lemmon,0.061,Pima County
+Munds Park,0.069,Coconino County
+Naco,0.061,Cochise County
+Nazlini,0.061,Apache
+New River,0.063,Maricopa County
+Nogales,0.086,Nogales
+North Rim,0.069,Coconino County
+Nutrioso,0.061,Apache County
+Oatman,0.056,Mohave County
+Oracle,0.072,Pinal County
+Overgaard,0.0643,Navajo County
+Page,0.099,Page
+Palo Verde,0.063,Maricopa County
+Paradise Valley,0.088,Paradise Valley
+Parker,0.096,Parker
+Parks,0.069,Coconino County
+Patagonia,0.066,Santa Cruz County
+Paulden,0.0635,Yavapai County
+Payson,0.0948,Payson
+Peach Springs,0.056,Mohave County
+Pearce,0.061,Cochise County
+Peoria,0.081,Peoria (Maricopa Co)
+Peridot,0.066,Gila County
+Petrified Forest Natl Pk,0.0918,Flagstaff
+Phoenix,0.086,Phoenix
+Phoenix,0.063,Maricopa County
+Picacho,0.072,Pinal County
+Pima,0.086,Pima
+Pine,0.066,Gila County
+Pinedale,0.0643,Navajo County
+Pinetop,0.0643,Navajo County
+Pinon,0.0643,Navajo
+Pirtleville,0.061,Cochise County
+Polacca,0.0643,Navajo County
+Pomerene,0.061,Cochise County
+Prescott,0.091,Prescott
+Prescott,0.0635,Yavapai County
+Prescott Valley,0.0918,Prescott Valley
+Prescott Valley,0.0635,Yavapai County
+Quartzsite,0.101,Quartzsite
+Queen Creek,0.0855,Queen Creek
+Red Rock,0.072,Pinal County
+Rillito,0.087,Tucson
+Rimrock,0.0635,Yavapai County
+Rio Rico,0.066,Santa Cruz County
+Rio Verde,0.063,Maricopa County
+Rock Point,0.061,Apache
+Roll,0.0671,Yuma County
+Roosevelt,0.066,Gila County
+Sacaton,0.087,Gila River Tribal Area
+Safford,0.091,Sp Safford
+Sahuarita,0.081,Sahuarita
+Saint David,0.061,Cochise County
+Saint Johns,0.091,Saint Johns
+Saint Michaels,0.061,Apache
+Salome,0.076,La Paz County
+San Carlos,0.066,Gila County
+San Luis,0.1071,San Luis
+San Manuel,0.072,Pinal County
+San Simon,0.061,Cochise County
+San Tan Valley,0.072,Pinal County
+Sanders,0.061,Apache County
+Sasabe,0.061,Pima County
+Scottsdale,0.0805,Scottsdale
+Scottsdale,0.086,Phoenix
+Scottsdale,0.0805,Salt River Pima-
+Second Mesa,0.0643,Navajo County
+Sedona,0.0985,Sedona (Yavapai Co)
+Sedona,0.0635,Yavapai County
+Sedona,0.104,Sedona (CoconinoCo)
+Seligman,0.0635,Yavapai County
+Sells,0.061,Pima County
+Shonto,0.0643,Navajo
+Show Low,0.0843,Show Low
+Sierra Vista,0.0805,Sierra Vista
+Sierra Vista,0.061,Cochise County
+Skull Valley,0.0635,Yavapai County
+Snowflake,0.0843,Snowflake
+Solomon,0.066,Graham County
+Somerton,0.0671,Yuma County
+Sonoita,0.066,Santa Cruz County
+Springerville,0.091,Springerville
+Stanfield,0.072,Pinal County
+Sun City,0.063,Maricopa County
+Sun City West,0.063,Maricopa County
+Sun Valley,0.0643,Navajo County
+Supai,0.069,Coconino County
+Superior,0.112,Superior
+Surprise,0.085,Surprise
+Tacna,0.0671,Yuma County
+Taylor,0.0843,Taylor
+Teec Nos Pos,0.061,Apache
+Tempe,0.081,Tempe
+Temple Bar  Marina,0.081,Kingman
+Thatcher,0.091,Thatcher
+Tolleson,0.086,Phoenix
+Tombstone,0.096,Tombstone
+Tonalea,0.069,Coconino
+Tonopah,0.063,Maricopa County
+Tonto Basin,0.066,Gila County
+Topawa,0.061,Pima County
+Topock,0.056,Mohave County
+Tsaile,0.061,Apache
+Tuba City,0.069,Coconino
+Tubac,0.066,Santa Cruz County
+Tucson,0.087,Tucson
+Tucson,0.061,Pima County
+Tucson,0.086,Oro Valley
+Tucson,0.072,Pinal County
+Tucson,0.087,Tucson Rio NuevoDistrict Sp
+Tucson,0.111,South Tucson
+Tumacacori,0.066,Santa Cruz County
+Vail,0.061,Pima County
+Valentine,0.056,Mohave County
+Valley Farms,0.072,Pinal County
+Vernon,0.061,Apache County
+Waddell,0.063,Maricopa County
+Wellton,0.0921,Wellton
+Wenden,0.076,La Paz County
+Whiteriver,0.0643,Navajo County
+Wickenburg,0.085,Wickenburg
+Wikieup,0.056,Mohave County
+Willcox,0.061,Cochise County
+Williams,0.069,Coconino County
+Willow Beach,0.056,Mohave County
+Window Rock,0.061,Apache
+Winkelman,0.072,Pinal County
+Winslow,0.0943,Winslow
+Wittmann,0.063,Maricopa County
+Woodruff,0.0643,Navajo County
+Yarnell,0.0635,Yavapai County
+Young,0.066,Gila County
+Youngtown,0.093,Youngtown
+Yucca,0.056,Mohave County
+Yuma,0.0841,Yuma
+Yuma,0.0671,Yuma County
